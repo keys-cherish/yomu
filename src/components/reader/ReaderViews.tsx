@@ -1,14 +1,9 @@
-import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-  forwardRef,
-} from "react";
+import { useCallback, useEffect, useMemo, useRef, forwardRef } from "react";
 import { AnimatePresence, motion } from "motion/react";
+import type { ReadingDirection, FitMode } from "@/stores/settings";
 import { getPageUrl } from "@/lib/comic-url";
-import type { ReadingDirection, ReadingMode, FitMode } from "@/stores/settings";
+import { ReaderPageImage } from "./ReaderPageImage";
+import { ReaderDoublePageSpread } from "./ReaderDoublePageSpread";
 
 const RENDER_BUFFER = 2;
 
@@ -134,6 +129,10 @@ export const ReaderPagedView = forwardRef<HTMLDivElement, ReaderPagedViewProps>(
     }, [currentPage, totalPages, mode]);
 
     const currentSlot = mode === "double" ? Math.floor(currentPage / 2) : currentPage;
+    const leftPageIndex = isRTL ? currentSlot * 2 + 1 : currentSlot * 2;
+    const rightPageIndex = isRTL ? currentSlot * 2 : currentSlot * 2 + 1;
+    const needsScroll = fitMode === "width";
+    const containerOverflow = needsScroll ? "overflow-y-auto overflow-x-hidden" : "overflow-hidden";
 
     const slideVariants = {
       enter: (dir: "left" | "right" | "none") => ({
@@ -146,11 +145,6 @@ export const ReaderPagedView = forwardRef<HTMLDivElement, ReaderPagedViewProps>(
         opacity: dir === "none" ? 0 : 1,
       }),
     };
-
-    const leftPageIndex = isRTL ? currentSlot * 2 + 1 : currentSlot * 2;
-    const rightPageIndex = isRTL ? currentSlot * 2 : currentSlot * 2 + 1;
-    const needsScroll = fitMode === "width";
-    const containerOverflow = needsScroll ? "overflow-y-auto overflow-x-hidden" : "overflow-hidden";
 
     return (
       <div
@@ -211,266 +205,3 @@ export const ReaderPagedView = forwardRef<HTMLDivElement, ReaderPagedViewProps>(
     );
   }
 );
-
-interface ReaderDoublePageSpreadProps {
-  bookHash: string;
-  leftPageIndex: number;
-  rightPageIndex: number;
-  totalPages: number;
-  fitMode: FitMode;
-}
-
-function ReaderDoublePageSpread({
-  bookHash,
-  leftPageIndex,
-  rightPageIndex,
-  totalPages,
-  fitMode,
-}: ReaderDoublePageSpreadProps) {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const [containerSize, setContainerSize] = useState<{ w: number; h: number }>({ w: 0, h: 0 });
-  const [pageSizes, setPageSizes] = useState<Record<number, { w: number; h: number }>>({});
-
-  useEffect(() => {
-    const el = containerRef.current;
-    if (!el) return;
-    const ro = new ResizeObserver((entries) => {
-      for (const entry of entries) {
-        const { width, height } = entry.contentRect;
-        setContainerSize({ w: width, h: height });
-      }
-    });
-    ro.observe(el);
-    return () => ro.disconnect();
-  }, []);
-
-  const hasLeft = leftPageIndex >= 0 && leftPageIndex < totalPages;
-  const hasRight = rightPageIndex >= 0 && rightPageIndex < totalPages;
-
-  const handleLoad = useCallback((pageIndex: number, img: HTMLImageElement) => {
-    setPageSizes((prev) => ({
-      ...prev,
-      [pageIndex]: { w: img.naturalWidth, h: img.naturalHeight },
-    }));
-  }, []);
-
-  const currentPages = useMemo(() => {
-    const set = new Set<number>();
-    if (hasLeft) set.add(leftPageIndex);
-    if (hasRight) set.add(rightPageIndex);
-    return set;
-  }, [leftPageIndex, rightPageIndex, hasLeft, hasRight]);
-
-  const prevPagesRef = useRef(currentPages);
-  useEffect(() => {
-    if (prevPagesRef.current !== currentPages) {
-      setPageSizes((prev) => {
-        const next: Record<number, { w: number; h: number }> = {};
-        for (const p of currentPages) {
-          if (prev[p]) next[p] = prev[p];
-        }
-        return next;
-      });
-      prevPagesRef.current = currentPages;
-    }
-  }, [currentPages]);
-
-  const leftSize = hasLeft ? pageSizes[leftPageIndex] ?? null : null;
-  const rightSize = hasRight ? pageSizes[rightPageIndex] ?? null : null;
-  const isSinglePage = (hasLeft && !hasRight) || (!hasLeft && hasRight);
-
-  const layout = useMemo(() => {
-    const leftRatio = leftSize ? leftSize.w / leftSize.h : null;
-    const rightRatio = rightSize ? rightSize.w / rightSize.h : null;
-    if ((hasLeft && !leftRatio) || (hasRight && !rightRatio)) return null;
-    return { lr: leftRatio ?? 0, rr: rightRatio ?? 0 };
-  }, [leftSize, rightSize, hasLeft, hasRight]);
-
-  const isWidth = fitMode === "width";
-  const isContain = fitMode === "contain";
-
-  const wrapperCls = isWidth
-    ? "flex w-full"
-    : isContain
-      ? "flex h-full w-full justify-around items-center"
-      : "flex h-full justify-center items-center";
-
-  const imgStyles = useMemo(() => {
-    if (!layout || containerSize.w === 0) return { left: undefined, right: undefined };
-    const { lr, rr } = layout;
-    const cw = containerSize.w;
-    const ch = containerSize.h;
-    const singleR = lr || rr;
-
-    if (isWidth) {
-      if (isSinglePage) {
-        const style = { width: cw, height: cw / singleR } as React.CSSProperties;
-        return { left: lr ? style : undefined, right: rr ? style : undefined };
-      }
-      const h = cw / (lr + rr);
-      return {
-        left: { width: lr * h, height: h } as React.CSSProperties,
-        right: { width: rr * h, height: h } as React.CSSProperties,
-      };
-    }
-
-    if (isContain) {
-      if (isSinglePage) {
-        const h = Math.min(ch, cw / singleR);
-        const style = { width: singleR * h, height: h } as React.CSSProperties;
-        return { left: lr ? style : undefined, right: rr ? style : undefined };
-      }
-      const h = Math.min(ch, cw / (lr + rr));
-      return {
-        left: { width: lr * h, height: h } as React.CSSProperties,
-        right: { width: rr * h, height: h } as React.CSSProperties,
-      };
-    }
-
-    const h = ch;
-    if (isSinglePage) {
-      const style = { width: singleR * h, height: h } as React.CSSProperties;
-      return { left: lr ? style : undefined, right: rr ? style : undefined };
-    }
-    return {
-      left: { width: lr * h, height: h } as React.CSSProperties,
-      right: { width: rr * h, height: h } as React.CSSProperties,
-    };
-  }, [layout, containerSize, isWidth, isContain, isSinglePage]);
-
-  return (
-    <div ref={containerRef} className={wrapperCls}>
-      {hasLeft && (
-        <ReaderDoublePageImage
-          key={`dbl-${leftPageIndex}`}
-          src={getPageUrl(bookHash, leftPageIndex)}
-          alt={`Page ${leftPageIndex + 1}`}
-          style={imgStyles.left}
-          onNaturalSize={(img) => handleLoad(leftPageIndex, img)}
-        />
-      )}
-      {hasRight && (
-        <ReaderDoublePageImage
-          key={`dbl-${rightPageIndex}`}
-          src={getPageUrl(bookHash, rightPageIndex)}
-          alt={`Page ${rightPageIndex + 1}`}
-          style={imgStyles.right}
-          onNaturalSize={(img) => handleLoad(rightPageIndex, img)}
-        />
-      )}
-    </div>
-  );
-}
-
-function ReaderDoublePageImage({
-  src,
-  alt,
-  style,
-  onNaturalSize,
-}: {
-  src: string;
-  alt: string;
-  style?: React.CSSProperties;
-  onNaturalSize: (img: HTMLImageElement) => void;
-}) {
-  const [loaded, setLoaded] = useState(false);
-  const [error, setError] = useState(false);
-
-  const handleLoad = useCallback(
-    (e: React.SyntheticEvent<HTMLImageElement>) => {
-      setLoaded(true);
-      onNaturalSize(e.currentTarget);
-    },
-    [onNaturalSize]
-  );
-
-  if (error) {
-    return (
-      <div className="flex items-center justify-center w-[150px] h-[300px] bg-white/5 rounded-[var(--radius-sm)] text-white/30 text-sm">
-        加载失败
-      </div>
-    );
-  }
-
-  return (
-    <img
-      src={src}
-      alt={alt}
-      className={`transition-opacity duration-150 block ${loaded ? "opacity-100" : "opacity-0"}`}
-      style={style}
-      onLoad={handleLoad}
-      onError={() => setError(true)}
-      draggable={false}
-    />
-  );
-}
-
-interface ReaderPageImageProps {
-  bookHash: string;
-  pageIndex: number;
-  mode: ReadingMode;
-  fitMode: FitMode;
-  lazy?: boolean;
-}
-
-function getImageClasses(mode: ReadingMode, fitMode: FitMode, loaded: boolean): string {
-  const opacityCls = `transition-opacity duration-150 ${loaded ? "opacity-100" : "opacity-0"}`;
-
-  if (mode === "scroll") {
-    return `w-full h-auto ${opacityCls}`;
-  }
-
-  switch (fitMode) {
-    case "width":
-      return `w-full h-auto ${opacityCls}`;
-    case "contain":
-      return `max-h-full max-w-full object-contain ${opacityCls}`;
-    case "height":
-    default:
-      return `h-full w-auto ${opacityCls}`;
-  }
-}
-
-function ReaderPageImage({ bookHash, pageIndex, mode, fitMode, lazy }: ReaderPageImageProps) {
-  const [loaded, setLoaded] = useState(false);
-  const [error, setError] = useState(false);
-
-  const url = getPageUrl(bookHash, pageIndex);
-  const imgClasses = getImageClasses(mode, fitMode, loaded);
-
-  if (error) {
-    return (
-      <div className="flex items-center justify-center w-[300px] h-[400px] bg-white/5 rounded-[var(--radius-sm)] text-white/30 text-sm">
-        加载失败 · 第 {pageIndex + 1} 页
-      </div>
-    );
-  }
-
-  const loadingAttr = lazy ? "lazy" : "eager";
-  const isWidthFit = fitMode === "width";
-  const containerCls =
-    mode === "scroll"
-      ? "relative w-full flex items-center justify-center"
-      : isWidthFit
-        ? "relative w-full flex items-center justify-center"
-        : "relative h-full w-full flex items-center justify-center";
-
-  return (
-    <div className={containerCls}>
-      <img
-        src={url}
-        alt={`Page ${pageIndex + 1}`}
-        loading={loadingAttr}
-        className={imgClasses}
-        onLoad={() => setLoaded(true)}
-        onError={() => setError(true)}
-        draggable={false}
-      />
-      {!loaded && (
-        <div className={`absolute inset-0 flex items-center justify-center ${mode === "scroll" ? "min-h-[50vh]" : ""}`}>
-          <div className="bg-white/5 rounded-[var(--radius-sm)] animate-pulse w-[200px] h-[300px]" />
-        </div>
-      )}
-    </div>
-  );
-}

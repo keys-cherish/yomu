@@ -2,18 +2,29 @@
 import { useEffect, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { useNavigate } from "@tanstack/react-router";
-import { ArrowLeft, ArrowLeftRight, ArrowRightLeft, Columns2, FileText, Fullscreen, RectangleHorizontal, RectangleVertical, Scroll } from "lucide-react";
+import {
+  ArrowLeft,
+  ArrowLeftRight,
+  ArrowRightLeft,
+  Columns2,
+  FileText,
+  Fullscreen,
+  RectangleHorizontal,
+  RectangleVertical,
+  Scroll,
+} from "lucide-react";
 import { GestureLayer } from "@/components/GestureLayer";
-import { ReaderOverlay } from "@/components/reader/ReaderOverlay";
-import { ReaderToolbar } from "@/components/reader/ReaderToolbar";
-import { ReaderPagedView, ReaderScrollView } from "@/components/reader/ReaderViews";
-import type {
-  BookInfo,
-  ReaderDirectionOption,
-  ReaderFitOption,
-  ReaderModeOption,
-} from "@/components/reader/types";
-import { useReaderControls } from "@/components/reader/useReaderControls";
+import {
+  ReaderOverlay,
+  ReaderPagedView,
+  ReaderScrollView,
+  ReaderToolbar,
+  useReaderControls,
+  type BookInfo,
+  type ReaderDirectionOption,
+  type ReaderFitOption,
+  type ReaderModeOption,
+} from "@/components/reader";
 import { useOrientation } from "@/hooks/useOrientation";
 import { usePreloader } from "@/hooks/usePreloader";
 import { useZoom } from "@/hooks/useZoom";
