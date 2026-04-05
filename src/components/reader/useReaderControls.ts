@@ -215,7 +215,7 @@ export function useReaderControls({
   }, [mode, totalPages, saveProgress]);
 
   useEffect(() => {
-    if (mode === "scroll") return;
+    if (mode === "scroll" || isWidthFit) return;
     const handleWheel = (e: WheelEvent) => {
       if (wheelCooldown.current) return;
       if (e.deltaY > 0) goNext();
@@ -228,7 +228,7 @@ export function useReaderControls({
     };
     window.addEventListener("wheel", handleWheel, { passive: true });
     return () => window.removeEventListener("wheel", handleWheel);
-  }, [mode, goNext, goPrev]);
+  }, [mode, isWidthFit, goNext, goPrev]);
 
   const handleTapLeft = useCallback(() => {
     if (showToolbar) {
