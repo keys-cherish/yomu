@@ -1,0 +1,210 @@
+/** 全局样式模块 */
+
+@import "tailwindcss";
+
+/* ============================================
+   Yomu 设计系统 — 极致纯净
+   基于 §2.1 视觉设计系统
+   ============================================ */
+
+/* ── 字体：HarmonyOS Sans ── */
+@font-face {
+  font-family: "HarmonyOS Sans";
+  src: url("../assets/fonts/HarmonyOS_Sans_Regular.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "HarmonyOS Sans";
+  src: url("../assets/fonts/HarmonyOS_Sans_Medium.ttf") format("truetype");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "HarmonyOS Sans";
+  src: url("../assets/fonts/HarmonyOS_Sans_Bold.ttf") format("truetype");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* ── 主题：自定义属性 ── */
+@theme {
+  --color-bg-base: #f5f5f7;
+  --color-bg-surface: #ffffff;
+  --color-bg-hover: #f0f0f2;
+  --color-bg-active: #e8e8ec;
+  --color-bg-skeleton: #ebebeb;
+
+  --color-text-primary: #1d1d1f;
+  --color-text-secondary: #86868b;
+  --color-text-tertiary: #aeaeb2;
+
+  --color-accent: #3b82f6;
+  --color-accent-light: #dbeafe;
+  --color-accent-border: #93c5fd;
+  --color-accent-hover: #2563eb;
+
+  --color-border: #e5e5ea;
+  --color-border-dashed: #93c5fd;
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.08);
+
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+
+  --duration-fast: 120ms;
+  --duration-normal: 200ms;
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ── 基础样式 ── */
+html {
+  background: var(--color-bg-base);
+  color: var(--color-text-primary);
+  font-family: "HarmonyOS Sans", -apple-system, BlinkMacSystemFont,
+    "Segoe UI", system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  min-height: 100vh;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+/* ── 选区样式 ── */
+::selection {
+  background: var(--color-accent-light);
+  color: var(--color-text-primary);
+}
+
+/* ── 滚动条（极简风格） ── */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-text-tertiary);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-text-secondary);
+}
+
+/* ── 阅读器强制深色模式 (§2.1.6) ── */
+.reader-view {
+  --color-bg-surface: #1a1a1a;
+  --color-bg-card: #2a2a2a;
+  --color-text-primary: rgba(255, 255, 255, 0.9);
+  --color-text-secondary: rgba(255, 255, 255, 0.6);
+  --color-border: rgba(255, 255, 255, 0.1);
+  background: var(--color-bg-surface);
+  color: var(--color-text-primary);
+}
+
+/* ── 骨架屏动画 (§2.1.4) ── */
+@keyframes skeleton-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.skeleton {
+  background: var(--color-bg-skeleton);
+  border-radius: var(--radius-sm);
+  animation: skeleton-pulse 1.5s ease-in-out infinite;
+}
+
+/* ── 工具类：拖拽区域（用于自定义标题栏） ── */
+.drag-region {
+  -webkit-app-region: drag;
+}
+
+/* ── 工具类：非拖拽区域（用于标题栏中的交互元素） ── */
+/* 必须放在 .drag-region 之后以确保优先级 */
+.no-drag,
+.drag-region .no-drag,
+.drag-region .no-drag * {
+  -webkit-app-region: no-drag;
+}
+
+/* ── 阅读器：隐藏滚动条以获得纯净阅读体验 ── */
+.reader-view ::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
+
+/* ── 阅读器：流畅滚动（仅限滚动模式） ── */
+.reader-view {
+  -webkit-overflow-scrolling: touch;
+}
+
+/* ── 阅读器进度条 ── */
+.reader-view input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 3px;
+  background: linear-gradient(
+    to right,
+    rgba(255, 255, 255, 0.8) var(--progress, 0%),
+    rgba(255, 255, 255, 0.15) var(--progress, 0%)
+  );
+  border-radius: 2px;
+  outline: none;
+  cursor: pointer;
+}
+
+.reader-view input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: white;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+  cursor: pointer;
+  transition: transform 120ms ease-out;
+}
+
+.reader-view input[type="range"]::-webkit-slider-thumb:hover {
+  transform: scale(1.3);
+}
+
+/* ── 阅读器底部面板 ── */
+.reader-bottom-panel {
+  box-shadow: 0 -2px 24px rgba(0, 0, 0, 0.3);
+}
+
+/* ── 减少动画：禁用所有过渡和动画 ── */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0ms !important;
+    animation-duration: 0ms !important;
+  }
+}
