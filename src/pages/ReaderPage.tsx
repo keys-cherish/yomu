@@ -148,6 +148,7 @@ export function ReaderPage() {
         onSwipeRight={mode !== "scroll" ? (controls.isRTL ? controls.goNext : controls.goPrev) : undefined}
         disabled={isZoomed}
         allowHorizontalPan={mode === "scroll"}
+        allowVerticalPan={mode !== "scroll" && fitMode === "width"}
       >
         {mode === "scroll" ? (
           <ReaderScrollView

@@ -33,8 +33,10 @@ interface GestureLayerProps {
   onSwipeRight?: () => void;
   /** 是否禁用手势 */
   disabled?: boolean;
-  /** 是否允许原生水平滚动（滚动模式时设为 true） */
+  /** 是否允许原生水平滚动（卷轴模式时设为 true） */
   allowHorizontalPan?: boolean;
+  /** 是否允许分页模式下的原生纵向滚动（适宽模式时设为 true） */
+  allowVerticalPan?: boolean;
 }
 
 /** 最小水平滑动距离（像素） */
@@ -44,7 +46,7 @@ const SWIPE_MAX_TIME = 500;
 
 /**
  * 手势识别层组件
- * 
+ *
  * 使用 Pointer Events 区分点击与滑动：
  * - 点击（移动 < 10px, 时间 < 300ms）→ 根据区域执行翻页或切换工具栏
  * - 水平滑动（touch/pen 输入，移动 > 50px, dx > dy）→ 触发翻页
@@ -59,6 +61,7 @@ export function GestureLayer({
   onSwipeRight,
   disabled = false,
   allowHorizontalPan = false,
+  allowVerticalPan = false,
 }: GestureLayerProps) {
   const gestureRef = useRef<GestureState | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -150,14 +153,21 @@ export function GestureLayer({
     [onTapLeft, onTapRight, onTapCenter, onSwipeLeft, onSwipeRight]
   );
 
+  const handlePointerCancel = useCallback(() => {
+    gestureRef.current = null;
+  }, []);
+
+  const touchAction = allowHorizontalPan ? "auto" : allowVerticalPan ? "pan-y pinch-zoom" : "pan-y";
+
   return (
     <div
       ref={containerRef}
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}
+      onPointerCancel={handlePointerCancel}
       className="relative flex-1 flex flex-col min-h-0"
-      style={{ touchAction: allowHorizontalPan ? "auto" : "pan-y" }}
+      style={{ touchAction }}
     >
       {children}
     </div>
