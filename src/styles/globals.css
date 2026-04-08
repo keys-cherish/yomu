@@ -78,6 +78,7 @@ html {
     "Segoe UI", system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  overscroll-behavior-x: none;
 }
 
 body {
@@ -86,6 +87,7 @@ body {
   overflow: hidden;
   min-height: 100vh;
   background: transparent;
+  overscroll-behavior-x: none;
 }
 
 #root {
