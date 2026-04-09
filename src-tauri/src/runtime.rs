@@ -43,6 +43,9 @@ pub fn run() {
             crate::commands::libraries::remove_library,
             crate::commands::books::get_libraries,
             crate::commands::libraries::scan_library,
+            crate::commands::backup::test_webdav,
+            crate::commands::backup::backup_to_webdav,
+            crate::commands::backup::restore_from_webdav,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

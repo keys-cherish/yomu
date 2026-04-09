@@ -12,16 +12,25 @@ export type ReadingDirection = "ltr" | "rtl";
 /** 图片适配模式：适高 / 适宽 / 适应（完整包含） */
 export type FitMode = "height" | "width" | "contain";
 
+/** WebDAV 配置 */
+export interface WebDavConfig {
+  url: string;
+  username: string;
+  password: string;
+}
+
 /** 设置状态接口 */
 interface SettingsState {
-  sidebarCollapsed: boolean; // 侧边栏是否折叠
-  readingMode: ReadingMode; // 当前阅读模式
-  readingDirection: ReadingDirection; // 翻页方向
-  fitMode: FitMode; // 图片适配模式
+  sidebarCollapsed: boolean;
+  readingMode: ReadingMode;
+  readingDirection: ReadingDirection;
+  fitMode: FitMode;
+  webdav: WebDavConfig;
   toggleSidebar: () => void;
   setReadingMode: (mode: ReadingMode) => void;
   setReadingDirection: (dir: ReadingDirection) => void;
   setFitMode: (mode: FitMode) => void;
+  setWebDav: (config: Partial<WebDavConfig>) => void;
 }
 
 /**
@@ -34,19 +43,23 @@ export const useSettingsStore = create<SettingsState>()(
       readingMode: "single",
       readingDirection: "ltr",
       fitMode: "height",
+      webdav: { url: "", username: "", password: "" },
       toggleSidebar: () => set((s) => ({ sidebarCollapsed: !s.sidebarCollapsed })),
       setReadingMode: (mode) => set({ readingMode: mode }),
       setReadingDirection: (dir) => set({ readingDirection: dir }),
       setFitMode: (mode) => set({ fitMode: mode }),
+      setWebDav: (config) => set((s) => ({ webdav: { ...s.webdav, ...config } })),
     }),
     {
       name: "yomu-settings",
-      version: 1,
-      // 迁移：v0 的 fitMode "original" → v1 的 "contain"
+      version: 2,
       migrate: (persisted: unknown, version: number) => {
         const state = persisted as Record<string, unknown>;
         if (version === 0 && state.fitMode === "original") {
           state.fitMode = "contain";
+        }
+        if (version < 2 && !state.webdav) {
+          state.webdav = { url: "", username: "", password: "" };
         }
         return state as unknown as SettingsState;
       },

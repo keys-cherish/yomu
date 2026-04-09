@@ -2,8 +2,7 @@
 
 ## 本次更新 (feat/library-management-and-series)
 
-> 基于 `master` (e6608c8) 的完整审阅、bug 修复与功能补全。
-> 共变更 **26 个文件**，净增 ~550 行。
+> 基于 `master` (e6608c8) 的完整审阅、bug 修复、功能补全与 WebDAV 备份。
 
 ---
 
@@ -93,9 +92,30 @@
 
 | 文件 | 内容 |
 |---|---|
-| `README.md` | 功能亮点新增 6 项；「已实现」补齐；「计划中」更新 |
-| `issues.md` | 全量问题清单，已修复项标 ✅，剩余 P1-3、P1-5、P2-1~P2-8 待处理 |
+| `README.md` | 功能亮点新增；「已实现」补齐；「计划中」更新 |
+| `issues.md` | 全量问题清单，已修复项标 ✅ |
 | `updates.md` | 本文件 |
+
+---
+
+### WebDAV 备份
+
+- **后端**：新增 `src-tauri/src/backup/` 模块，基于 `reqwest` 实现 WebDAV PUT/GET/MKCOL 客户端
+- **Tauri commands**：`test_webdav`（测试连接）、`backup_to_webdav`（备份 DB）、`restore_from_webdav`（恢复 DB）
+- **备份流程**：WAL checkpoint → 复制 DB 到临时文件 → PUT 上传到 `<webdav>/yomu-backup/library.db` → 清理临时文件
+- **恢复流程**：GET 下载 → 验证 SQLite 有效性 → 替换本地 DB → 重新初始化连接
+- **前端**：`/settings/backup` 页面，配置 WebDAV URL/用户名/密码（持久化到 Zustand），支持测试连接/备份/恢复三个操作
+- **备份内容**：仅 `library.db`（所有书籍记录、阅读进度、书库路径）— 封面和缓存可从源文件重新生成
+
+---
+
+### 额外修复（本次新增）
+
+| 编号 | 问题 | 修复 | 文件 |
+|---|---|---|---|
+| P1-3 | SPINE_CACHE 无上限 | 手写 LRU（32 条上限） | `src-tauri/src/protocol/spine.rs` |
+| P1-5 | OPF 解析不支持单引号 | `extract_attr` 双引号+单引号；spine.rs 复用 opf.rs | `scanner/epub/opf.rs`、`scanner/epub/spine.rs` |
+| P2-6 | protocol 不校验 hash 格式 | 入口处 hex 格式校验 | `src-tauri/src/protocol/handler.rs` |
 
 ---
 
@@ -104,9 +124,13 @@
 ```
 README.md
 issues.md
-updates.md (新增)
+updates.md
 src-tauri/Cargo.toml
 src-tauri/Cargo.lock
+src-tauri/src/backup/mod.rs (新增)
+src-tauri/src/backup/webdav.rs (新增)
+src-tauri/src/commands/backup.rs (新增)
+src-tauri/src/commands/mod.rs
 src-tauri/src/commands/books.rs
 src-tauri/src/commands/cache.rs
 src-tauri/src/commands/libraries.rs
@@ -115,12 +139,16 @@ src-tauri/src/db/libraries.rs
 src-tauri/src/db/mod.rs
 src-tauri/src/db/models.rs
 src-tauri/src/db/schema.rs
+src-tauri/src/lib.rs
 src-tauri/src/protocol/handler.rs
+src-tauri/src/protocol/spine.rs
 src-tauri/src/runtime.rs
 src-tauri/src/scanner/hash.rs
 src-tauri/src/scanner/mod.rs
 src-tauri/src/scanner/process.rs
 src-tauri/src/scanner/types.rs
+src-tauri/src/scanner/epub/opf.rs
+src-tauri/src/scanner/epub/spine.rs
 src/components/layout/TitleBar.tsx
 src/components/reader/ReaderViews.tsx
 src/components/reader/types.ts
@@ -129,8 +157,12 @@ src/main.tsx
 src/pages/BookDetailPage.tsx
 src/pages/LibraryPage.tsx
 src/pages/SearchPage.tsx
+src/routeTree.gen.ts
 src/routes/__root.tsx
+src/routes/settings.backup.tsx (新增)
 src/routes/settings.display.tsx
 src/routes/settings.general.tsx
 src/routes/settings.library.tsx
+src/routes/settings.tsx
+src/stores/settings.ts
 ```
