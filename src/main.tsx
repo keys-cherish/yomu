@@ -5,6 +5,7 @@ import { RouterProvider, createRouter } from "@tanstack/react-router";
 import { routeTree } from "./routeTree.gen";
 import { invoke } from "@tauri-apps/api/core";
 import { getCurrentWindow, currentMonitor, LogicalSize, LogicalPosition } from "@tauri-apps/api/window";
+import { logger } from "./lib/logger";
 import "./styles/globals.css";
 
 // 创建路由实例
@@ -52,6 +53,7 @@ async function adjustWindowSize() {
     await win.setPosition(new LogicalPosition(Math.max(0, x), Math.max(0, y)));
   } catch (e) {
     console.error("Failed to adjust window size:", e);
+    logger.error("Failed to adjust window size", e);
   }
 }
 

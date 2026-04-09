@@ -8,24 +8,48 @@ pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_fs::init())
+        .plugin(
+            // 日志系统：所有模式都启用（不再限制 debug_assertions）
+            // - Debug 模式：Info 级别
+            // - Release 模式：Warn 级别（减少磁盘 IO）
+            // - 同时写入文件和标准输出
+            // - 日志文件位于 appData/logs/，单文件上限 2MB，最多保留 5 个
+            tauri_plugin_log::Builder::default()
+                .level(if cfg!(debug_assertions) {
+                    log::LevelFilter::Debug
+                } else {
+                    log::LevelFilter::Info
+                })
+                .max_file_size(2 * 1024 * 1024) // 2MB per file
+                .rotation_strategy(tauri_plugin_log::RotationStrategy::KeepAll)
+                .target(tauri_plugin_log::Target::new(
+                    tauri_plugin_log::TargetKind::LogDir { file_name: Some("yomu".into()) },
+                ))
+                .target(tauri_plugin_log::Target::new(
+                    tauri_plugin_log::TargetKind::Stdout,
+                ))
+                .target(tauri_plugin_log::Target::new(
+                    tauri_plugin_log::TargetKind::Webview,
+                ))
+                .build(),
+        )
         .register_uri_scheme_protocol("comic", protocol::handle_comic_protocol)
         .setup(|app| {
-            if cfg!(debug_assertions) {
-                app.handle().plugin(
-                    tauri_plugin_log::Builder::default()
-                        .level(log::LevelFilter::Info)
-                        .build(),
-                )?;
-            }
-
             let db_path = db::get_db_path(app.handle())?;
             let connection = db::init_db(&db_path)
                 .map_err(|e| format!("DB init failed: {}", e))?;
             app.manage(db::DbState(std::sync::Mutex::new(connection)));
 
-            log::info!("Yomu started, DB at {:?}", db_path);
+            // 记录启动环境信息
+            log::info!("Yomu v{} started", env!("CARGO_PKG_VERSION"));
+            log::info!("DB at {:?}", db_path);
+            log::info!("Build mode: {}", if cfg!(debug_assertions) { "debug" } else { "release" });
 
-            // 启动时后台自动重扫所有已保存的书库，以发现外部新增/删除的漫画
+            if let Ok(log_dir) = app.path().app_log_dir() {
+                log::info!("Log directory: {:?}", log_dir);
+            }
+
+            // 启动时后台自动重扫所有已保存的书库
             let handle = app.handle().clone();
             tokio::spawn(async move {
                 auto_rescan_libraries(&handle).await;
@@ -46,6 +70,9 @@ pub fn run() {
             crate::commands::backup::test_webdav,
             crate::commands::backup::backup_to_webdav,
             crate::commands::backup::restore_from_webdav,
+            crate::commands::debug::get_log_path,
+            crate::commands::debug::get_debug_info,
+            crate::commands::debug::export_logs,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

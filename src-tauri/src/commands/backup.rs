@@ -39,6 +39,8 @@ pub async fn backup_to_webdav(
             .map_err(|e| format!("WAL checkpoint failed: {}", e))?;
     }
 
+    log::info!("Backup: starting upload to {}", url);
+
     // 复制到临时文件避免锁冲突
     let tmp_path = db_path.with_extension("db.backup");
     std::fs::copy(&db_path, &tmp_path)
@@ -52,9 +54,13 @@ pub async fn backup_to_webdav(
     match result {
         Ok(size) => {
             let mb = size as f64 / 1024.0 / 1024.0;
+            log::info!("Backup: upload complete ({:.1} MB)", mb);
             Ok(format!("Backup complete ({:.1} MB)", mb))
         }
-        Err(e) => Err(e),
+        Err(e) => {
+            log::error!("Backup: upload failed: {}", e);
+            Err(e)
+        }
     }
 }
 

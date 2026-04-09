@@ -1,6 +1,7 @@
 /** 根布局路由说明 */
 import { createRootRoute, Outlet, useNavigate, useRouterState } from "@tanstack/react-router";
 import { AppShell } from "@/components/layout/AppShell";
+import { DebugPanel } from "@/components/DebugPanel";
 import { ArrowLeft } from "lucide-react";
 
 export const Route = createRootRoute({
@@ -17,13 +18,12 @@ function RootLayout() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const isReader = pathname.startsWith("/reader/");
 
-  // 阅读器使用独立的全屏布局（无侧边栏/标题栏）
-  if (isReader) {
-    return <Outlet />;
-  }
-
-  // AppShell 内部渲染了 AnimatedOutlet
-  return <AppShell />;
+  return (
+    <>
+      {isReader ? <Outlet /> : <AppShell />}
+      <DebugPanel />
+    </>
+  );
 }
 
 /** 全局错误边界（修 P1-8） */
