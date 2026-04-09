@@ -1,7 +1,7 @@
 use std::fs::File;
 use std::io::Read;
 
-use super::opf::find_opf_path;
+use super::opf::{extract_attr, find_opf_path};
 use super::xhtml::{find_image_ref_in_xhtml, resolve_relative_path};
 
 pub fn list_epub_images_by_spine(
@@ -82,15 +82,4 @@ pub fn list_epub_images_by_spine(
     }
 
     Ok(result)
-}
-
-fn extract_attr(tag: &str, attr_name: &str) -> Option<String> {
-    let pattern = format!("{}=\"", attr_name);
-    if let Some(pos) = tag.find(&pattern) {
-        let start = pos + pattern.len();
-        if let Some(end) = tag[start..].find('"') {
-            return Some(tag[start..start + end].to_string());
-        }
-    }
-    None
 }

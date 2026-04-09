@@ -58,11 +58,10 @@
 
 ---
 
-## 🟠 P1-3 SPINE_CACHE 全局静态无上限、无过期
+## ✅ P1-3 SPINE_CACHE 全局静态无上限、无过期
 
-- **位置**：`src-tauri/src/protocol/spine.rs:6-7`
-- **现象**：所有 EPUB 读过之后，spine 列表永远留在内存，没有 LRU、没有容量上限。
-- **建议修复**：用带上限的 LRU（如 `lru` crate），或基于最近使用时间做淘汰。
+- **状态**：已修复 — 用手写 LRU（上限 32 条）替换无限 HashMap
+- **位置**：`src-tauri/src/protocol/spine.rs`
 
 ---
 
@@ -73,12 +72,10 @@
 
 ---
 
-## 🟠 P1-5 OPF 用 str::find 做 XML 解析
+## ✅ P1-5 OPF 用 str::find 做 XML 解析
 
-- **位置**：`src-tauri/src/scanner/epub/opf.rs`、`scanner/epub/spine.rs`
-- **现象**：手写的 line-based / 字符串 find 方法对 XML 的各种合法变体脆弱（单引号、跨行、注释、命名空间前缀）。
-- **影响**：部分 EPUB 会扫不到封面或 spine，导致页数 = 1 / 无封面。
-- **建议修复**：引入 `quick-xml` 或 `roxmltree`。
+- **状态**：已修复 — extract_attr 同时支持双引号和单引号；spine.rs 复用 opf.rs 的实现消除重复
+- **位置**：`src-tauri/src/scanner/epub/opf.rs`、`src-tauri/src/scanner/epub/spine.rs`
 
 ---
 
@@ -152,10 +149,10 @@
 
 ---
 
-## 🟡 P2-6 protocol 路径缺失鲁棒性验证
+## ✅ P2-6 protocol 路径缺失鲁棒性验证
 
+- **状态**：已修复 — 入口处做 hex 格式校验，不合法直接 400
 - **位置**：`src-tauri/src/protocol/handler.rs`
-- **建议修复**：对 book_hash 做 hex 格式校验。
 
 ---
 
@@ -190,6 +187,4 @@
 
 | 编号 | 优先级 | 概要 |
 |---|---|---|
-| P1-3 | 🟠 | SPINE_CACHE 无上限 |
-| P1-5 | 🟠 | OPF 解析用字符串 find，非 XML parser |
-| P2-1 ~ P2-8 | 🟡 | 类型共享、代码重复、启动闪烁等 |
+| P2-1 ~ P2-5, P2-7, P2-8 | 🟡 | 类型共享、代码重复、启动闪烁等 |

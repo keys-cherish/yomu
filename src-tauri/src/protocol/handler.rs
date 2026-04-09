@@ -22,8 +22,12 @@ pub fn handle_comic_protocol(
         .collect();
 
     match segments.as_slice() {
-        ["cover", book_hash] => handle_cover(app, book_hash),
+        ["cover", book_hash] => {
+            if !is_valid_hash(book_hash) { return error_response(400, "Invalid hash"); }
+            handle_cover(app, book_hash)
+        }
         ["page", book_hash, page_index_str] => {
+            if !is_valid_hash(book_hash) { return error_response(400, "Invalid hash"); }
             match page_index_str.parse::<usize>() {
                 Ok(page_index) => handle_page(app, book_hash, page_index),
                 Err(_) => error_response(400, "Invalid page index"),
@@ -31,6 +35,11 @@ pub fn handle_comic_protocol(
         }
         _ => error_response(404, "Not Found"),
     }
+}
+
+/// 校验 book_hash 是否为合法的十六进制字符串（修 P2-6）
+fn is_valid_hash(s: &str) -> bool {
+    !s.is_empty() && s.len() <= 128 && s.chars().all(|c| c.is_ascii_hexdigit())
 }
 
 fn handle_cover(app: &tauri::AppHandle, book_hash: &str) -> Response<Vec<u8>> {
