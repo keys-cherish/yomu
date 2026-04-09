@@ -3,7 +3,7 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import { RouterProvider, createRouter } from "@tanstack/react-router";
 import { routeTree } from "./routeTree.gen";
-import { getCurrentWindow, currentMonitor, LogicalSize, LogicalPosition } from "@tauri-apps/api/window";
+import { getCurrentWindow, currentMonitor, LogicalSize } from "@tauri-apps/api/window";
 import "./styles/globals.css";
 
 // 创建路由实例
@@ -38,17 +38,14 @@ async function adjustWindowSize() {
     const screenW = monitor.size.width / scale;
     const screenH = monitor.size.height / scale;
 
-    const minW = 400;
-    const minH = 400;
-    const w = Math.max(minW, Math.round(screenW * 0.8));
-    const h = Math.max(minH, Math.round(screenH * 0.8));
+    const minW = 1000;
+    const minH = 700;
+    const targetW = Math.max(minW, Math.round(screenW * 0.82));
+    const targetH = Math.max(minH, Math.round(screenH * 0.86));
 
-    await win.setSize(new LogicalSize(w, h));
-
-    // 居中
-    const x = Math.round((screenW - w) / 2);
-    const y = Math.round((screenH - h) / 2);
-    await win.setPosition(new LogicalPosition(Math.max(0, x), Math.max(0, y)));
+    await win.unmaximize();
+    await win.setSize(new LogicalSize(targetW, targetH));
+    await win.center();
   } catch (e) {
     console.error("Failed to adjust window size:", e);
   }

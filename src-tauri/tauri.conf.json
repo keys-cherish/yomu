@@ -5,7 +5,7 @@
   "identifier": "com.yomu.app",
   "build": {
     "frontendDist": "../dist",
-    "devUrl": "http://127.0.0.1:5173",
+    "devUrl": "http://192.168.5.188:5173",
     "beforeDevCommand": "pnpm dev",
     "beforeBuildCommand": "pnpm build"
   },
@@ -13,12 +13,13 @@
     "windows": [
       {
         "title": "Yomu",
-        "width": 800,
-        "height": 600,
+        "width": 1280,
+        "height": 800,
         "minWidth": 400,
         "minHeight": 400,
         "resizable": true,
         "fullscreen": false,
+        "maximized": false,
         "decorations": false
       }
     ],
