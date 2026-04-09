@@ -6,6 +6,7 @@ pub struct ScannedBook {
     pub path: PathBuf,
     pub title: String,
     pub file_size: i64,
+    pub last_modified: Option<i64>,
     pub hash: String,
     pub page_count: i64,
     pub format: BookFormat,

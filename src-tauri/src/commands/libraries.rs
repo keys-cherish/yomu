@@ -25,6 +25,16 @@ pub async fn add_library(
         .ok_or_else(|| "Library not found after creation".to_string())
 }
 
+/// 删除库目录及其关联的书籍记录
+#[tauri::command]
+pub async fn remove_library(
+    state: State<'_, db::DbState>,
+    library_id: i64,
+) -> Result<(), String> {
+    let db = state.0.lock().map_err(|e| e.to_string())?;
+    db::remove_library(&db, library_id).map_err(|e| e.to_string())
+}
+
 /// 扫描库目录
 #[tauri::command]
 pub async fn scan_library(
@@ -62,6 +72,10 @@ pub(crate) async fn scan_library_inner(
                 Err(e) => log::warn!("Failed to process {:?}: {}", file, e),
             }
         }
+
+        // 批量回填系列名（同目录下同名前缀 ≥2 本才折叠）
+        scanner::assign_series_names(&mut processed);
+
         processed
     })
     .await
@@ -80,9 +94,11 @@ pub(crate) async fn scan_library_inner(
                 &book.title,
                 &book.path.to_string_lossy(),
                 book.file_size,
+                book.last_modified,
                 book.page_count,
                 &cover_rel,
                 book.format.as_str(),
+                book.series_name.as_deref(),
             ) {
                 log::warn!("Failed to insert book '{}': {}", book.title, e);
             }

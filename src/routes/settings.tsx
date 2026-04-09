@@ -1,6 +1,6 @@
 /** 设置布局路由说明 */
 import { createFileRoute, Outlet, Link } from "@tanstack/react-router";
-import { Settings, Library, Monitor } from "lucide-react";
+import { Settings, Library, Monitor, CloudUpload } from "lucide-react";
 
 export const Route = createFileRoute("/settings")({
   component: SettingsLayout,
@@ -48,6 +48,14 @@ function SettingsLayout() {
           >
             <Monitor size={16} />
             显示与性能
+          </Link>
+          <Link
+            to="/settings/backup"
+            className="flex items-center gap-3 border border-transparent px-3 py-3 text-sm text-text-secondary transition-all duration-150 hover:border-border hover:bg-bg-hover hover:text-text-primary"
+            activeProps={{ className: "!border-[var(--color-accent-border)] !bg-accent-light !text-text-primary" }}
+          >
+            <CloudUpload size={16} />
+            WebDAV 备份
           </Link>
         </nav>
       </aside>

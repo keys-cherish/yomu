@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useMemo, useRef, forwardRef } from "react";
+import { useEffect, useMemo, useRef, forwardRef } from "react";
+import { Virtuoso, type VirtuosoHandle } from "react-virtuoso";
 import { AnimatePresence, motion } from "motion/react";
 import type { ReadingDirection, FitMode } from "@/stores/settings";
 import { getPageUrl } from "@/lib/comic-url";
@@ -16,62 +17,44 @@ interface ReaderScrollViewProps {
   scrollRequestId: number;
 }
 
-/** 卷轴模式视图：按顺序渲染所有页面，并响应外部滚动定位请求 */
+/** 卷轴模式视图：用 react-virtuoso 虚拟化渲染，只在视口附近创建 DOM 节点（修 P0-1） */
 export const ReaderScrollView = forwardRef<HTMLDivElement, ReaderScrollViewProps>(
   function ReaderScrollView({ bookHash, totalPages, fitMode, initialPage, scrollToPage, scrollRequestId }, ref) {
-    const internalRef = useRef<HTMLDivElement>(null);
-    const didScrollRef = useRef(false);
-    const scrollToPageRef = useRef(scrollToPage);
-    scrollToPageRef.current = scrollToPage;
+    const virtuosoRef = useRef<VirtuosoHandle>(null);
+    const scrollerRef = useRef<HTMLDivElement | null>(null);
 
-    const scrollToElement = useCallback((container: HTMLDivElement, pageIndex: number, instant: boolean) => {
-      const target = container.querySelector(`[data-page-index="${pageIndex}"]`);
-      if (target) {
-        target.scrollIntoView({ behavior: instant ? ("instant" as ScrollBehavior) : "smooth" });
-      }
-    }, []);
-
+    // 初始定位
     useEffect(() => {
-      if (didScrollRef.current || initialPage <= 0) return;
-      const container = internalRef.current;
-      if (!container) return;
-      const target = container.querySelector(`[data-page-index="${initialPage}"]`);
-      if (target) {
-        scrollToElement(container, initialPage, true);
-        didScrollRef.current = true;
-      } else {
-        const timer = setTimeout(() => {
-          if (internalRef.current) {
-            scrollToElement(internalRef.current, initialPage, true);
-          }
-          didScrollRef.current = true;
-        }, 100);
-        return () => clearTimeout(timer);
+      if (initialPage > 0 && virtuosoRef.current) {
+        virtuosoRef.current.scrollToIndex({ index: initialPage, align: "start", behavior: "auto" });
       }
-    }, [initialPage, scrollToElement]);
+    }, [initialPage]);
 
+    // 外部跳转请求（slider 等）
     useEffect(() => {
       if (scrollRequestId === 0) return;
-      const container = internalRef.current;
-      if (!container) return;
-      scrollToElement(container, scrollToPageRef.current, false);
-    }, [scrollRequestId, scrollToElement]);
+      virtuosoRef.current?.scrollToIndex({ index: scrollToPage, align: "start", behavior: "smooth" });
+    }, [scrollRequestId, scrollToPage]);
 
     return (
-      <div
-        ref={(node) => {
-          internalRef.current = node;
-          if (typeof ref === "function") ref(node);
-          else if (ref) ref.current = node;
+      <Virtuoso
+        ref={virtuosoRef}
+        totalCount={totalPages}
+        overscan={800}
+        scrollerRef={(el) => {
+          if (el instanceof HTMLDivElement) {
+            scrollerRef.current = el;
+            if (typeof ref === "function") ref(el);
+            else if (ref) ref.current = el;
+          }
         }}
-        className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden"
-      >
-        {Array.from({ length: totalPages }).map((_, i) => (
-          <div key={i} data-page-index={i} className="flex items-center justify-center">
-            <ReaderPageImage bookHash={bookHash} pageIndex={i} mode="scroll" fitMode={fitMode} lazy />
+        className="flex-1 min-h-0"
+        itemContent={(index) => (
+          <div data-page-index={index} className="flex items-center justify-center">
+            <ReaderPageImage bookHash={bookHash} pageIndex={index} mode="scroll" fitMode={fitMode} lazy />
           </div>
-        ))}
-      </div>
+        )}
+      />
     );
   }
 );

@@ -39,26 +39,28 @@ pub fn upsert_book(
     title: &str,
     path: &str,
     file_size: i64,
+    last_modified: Option<i64>,
     page_count: i64,
     cover_path: &str,
     format: &str,
     series_name: Option<&str>,
 ) -> Result<i64, Box<dyn std::error::Error>> {
     db.execute(
-        "INSERT INTO books (library_id, hash, title, path, file_size, page_count, cover_path, format, series_name)
-         VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9)
+        "INSERT INTO books (library_id, hash, title, path, file_size, last_modified, page_count, cover_path, format, series_name)
+         VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10)
          ON CONFLICT(hash) DO UPDATE SET
             library_id = excluded.library_id,
             title = excluded.title,
             path = excluded.path,
             file_size = excluded.file_size,
+            last_modified = excluded.last_modified,
             page_count = excluded.page_count,
             cover_path = excluded.cover_path,
             format = excluded.format,
             series_name = excluded.series_name,
             is_removed = 0,
             updated_at = unixepoch()",
-        rusqlite::params![library_id, hash, title, path, file_size, page_count, cover_path, format, series_name],
+        rusqlite::params![library_id, hash, title, path, file_size, last_modified, page_count, cover_path, format, series_name],
     )?;
 
     let id: i64 = db.query_row(

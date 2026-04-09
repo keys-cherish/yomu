@@ -87,11 +87,7 @@ pub async fn warm_cache(
             };
 
             if let Some(raw_bytes) = raw_bytes {
-                let (final_bytes, final_ext) = {
-                    let e = detect_ext(&raw_bytes);
-                    (raw_bytes, e)
-                };
-
+                let (final_bytes, final_ext) = transcode_if_needed(raw_bytes);
                 let cache_name = format!("page_{}.{}", page_index, final_ext);
                 let _ = std::fs::write(cache_dir_owned.join(cache_name), &final_bytes);
             }
@@ -149,12 +145,36 @@ pub async fn cleanup_cache(
     result
 }
 
-fn detect_ext(bytes: &[u8]) -> &'static str {
-    if bytes.len() >= 2 && bytes[0] == 0xFF && bytes[1] == 0xD8 { return "jpg"; }
-    if bytes.len() >= 4 && bytes[0] == 0x89 && &bytes[1..4] == b"PNG" { return "png"; }
-    if bytes.len() >= 12 && &bytes[0..4] == b"RIFF" && &bytes[8..12] == b"WEBP" { return "webp"; }
-    if bytes.len() >= 3 && &bytes[0..3] == b"GIF" { return "gif"; }
-    "webp"
+fn detect_ext(bytes: &[u8]) -> Option<&'static str> {
+    if bytes.len() >= 2 && bytes[0] == 0xFF && bytes[1] == 0xD8 { return Some("jpg"); }
+    if bytes.len() >= 4 && bytes[0] == 0x89 && &bytes[1..4] == b"PNG" { return Some("png"); }
+    if bytes.len() >= 12 && &bytes[0..4] == b"RIFF" && &bytes[8..12] == b"WEBP" { return Some("webp"); }
+    if bytes.len() >= 3 && &bytes[0..3] == b"GIF" { return Some("gif"); }
+    None
+}
+
+/// 如果字节是浏览器原生支持的格式，原样返回；否则转码为 webp。
+/// 这样 warm_cache 写入的缓存和 extract_and_maybe_transcode 走相同逻辑，
+/// 避免把 BMP/TIFF 原始字节误标为 .webp 导致加载失败（修 P0-2）。
+fn transcode_if_needed(raw_bytes: Vec<u8>) -> (Vec<u8>, &'static str) {
+    if let Some(ext) = detect_ext(&raw_bytes) {
+        return (raw_bytes, ext);
+    }
+    // 非浏览器原生格式 → 转码为 webp
+    match image::load_from_memory(&raw_bytes) {
+        Ok(img) => {
+            let rgba = img.to_rgba8();
+            let (w, h) = (rgba.width(), rgba.height());
+            let encoder = webp::Encoder::from_rgba(&rgba, w, h);
+            let webp_data = encoder.encode(85.0);
+            (webp_data.to_vec(), "webp")
+        }
+        Err(_) => {
+            // 彻底无法解码的字节，原样保存为 bin 后缀（不会被缓存读取命中，
+            // 等后续按需路径 extract_and_maybe_transcode 重试）
+            (raw_bytes, "bin")
+        }
+    }
 }
 
 fn dir_size(path: &std::path::Path) -> u64 {

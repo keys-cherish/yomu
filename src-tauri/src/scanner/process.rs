@@ -35,7 +35,13 @@ pub fn process_book(
         .unwrap_or("Unknown")
         .to_string();
 
-    let file_size = std::fs::metadata(path)?.len() as i64;
+    let metadata = std::fs::metadata(path)?;
+    let file_size = metadata.len() as i64;
+    let last_modified = metadata
+        .modified()
+        .ok()
+        .and_then(|t| t.duration_since(std::time::UNIX_EPOCH).ok())
+        .map(|d| d.as_secs() as i64);
     let hash = compute_file_hash(path)?;
 
     let page_count = match format {
@@ -64,6 +70,7 @@ pub fn process_book(
         path: path.to_path_buf(),
         title,
         file_size,
+        last_modified,
         hash,
         page_count,
         format,
@@ -85,9 +92,8 @@ pub fn assign_series_names(books: &mut [ScannedBook]) {
     let mut groups: HashMap<String, Vec<usize>> = HashMap::new();
     for (idx, book) in books.iter().enumerate() {
         if let Some(parent) = book.path.parent() {
-            if let Some(parent_str) = parent.to_str() {
-                groups.entry(parent_str.to_string()).or_default().push(idx);
-            }
+            let parent_str = parent.to_string_lossy().to_string();
+            groups.entry(parent_str).or_default().push(idx);
         }
     }
 

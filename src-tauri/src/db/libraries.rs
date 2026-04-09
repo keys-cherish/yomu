@@ -62,17 +62,24 @@ pub fn get_library_book_count(db: &Connection, library_id: i64) -> Result<i64, B
     Ok(count)
 }
 
-/// 删除一个库及其所有书籍记录
+/// 删除一个库及其所有书籍记录（事务保证原子性）
 /// 物理删除：一并删除 books 表中 library_id 指向该库的所有行。
 /// 注意：不会删除磁盘上的书籍文件本身。
 pub fn remove_library(db: &Connection, library_id: i64) -> Result<(), Box<dyn std::error::Error>> {
-    db.execute(
-        "DELETE FROM books WHERE library_id = ?1",
-        rusqlite::params![library_id],
-    )?;
-    db.execute(
-        "DELETE FROM libraries WHERE id = ?1",
-        rusqlite::params![library_id],
-    )?;
-    Ok(())
+    db.execute_batch("BEGIN")?;
+    let result = (|| -> Result<(), Box<dyn std::error::Error>> {
+        db.execute(
+            "DELETE FROM books WHERE library_id = ?1",
+            rusqlite::params![library_id],
+        )?;
+        db.execute(
+            "DELETE FROM libraries WHERE id = ?1",
+            rusqlite::params![library_id],
+        )?;
+        Ok(())
+    })();
+    match result {
+        Ok(()) => { db.execute_batch("COMMIT")?; Ok(()) }
+        Err(e) => { let _ = db.execute_batch("ROLLBACK"); Err(e) }
+    }
 }

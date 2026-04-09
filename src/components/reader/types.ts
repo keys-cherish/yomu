@@ -8,6 +8,7 @@ export interface BookInfo {
   page_count: number | null;
   read_progress: number;
   format: string;
+  series_name: string | null;
 }
 
 export interface ReaderOption<T extends string> {

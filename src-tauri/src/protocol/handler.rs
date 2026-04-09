@@ -22,8 +22,12 @@ pub fn handle_comic_protocol(
         .collect();
 
     match segments.as_slice() {
-        ["cover", book_hash] => handle_cover(app, book_hash),
+        ["cover", book_hash] => {
+            if !is_valid_hash(book_hash) { return error_response(400, "Invalid hash"); }
+            handle_cover(app, book_hash)
+        }
         ["page", book_hash, page_index_str] => {
+            if !is_valid_hash(book_hash) { return error_response(400, "Invalid hash"); }
             match page_index_str.parse::<usize>() {
                 Ok(page_index) => handle_page(app, book_hash, page_index),
                 Err(_) => error_response(400, "Invalid page index"),
@@ -31,6 +35,11 @@ pub fn handle_comic_protocol(
         }
         _ => error_response(404, "Not Found"),
     }
+}
+
+/// 校验 book_hash 是否为合法的十六进制字符串（修 P2-6）
+fn is_valid_hash(s: &str) -> bool {
+    !s.is_empty() && s.len() <= 128 && s.chars().all(|c| c.is_ascii_hexdigit())
 }
 
 fn handle_cover(app: &tauri::AppHandle, book_hash: &str) -> Response<Vec<u8>> {
@@ -74,10 +83,10 @@ fn handle_page(app: &tauri::AppHandle, book_hash: &str, page_index: usize) -> Re
     };
 
     let hash_owned = book_hash.to_string();
-    let result = std::thread::spawn(move || {
+    // 直接在当前线程执行，用 catch_unwind 隔离 panic（替代之前每次 spawn+join 的开销）
+    let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
         extract_and_maybe_transcode(&book_info, &hash_owned, page_index, &cache_dir)
-    })
-    .join();
+    }));
 
     match result {
         Ok(Ok((bytes, mime))) => build_image_response(bytes, &mime),
@@ -85,6 +94,6 @@ fn handle_page(app: &tauri::AppHandle, book_hash: &str, page_index: usize) -> Re
             log::warn!("Failed to extract page {} from {}: {}", page_index, book_hash, e);
             error_response(500, "Failed to extract page")
         }
-        Err(_) => error_response(500, "Thread panicked"),
+        Err(_) => error_response(500, "Extract panicked"),
     }
 }

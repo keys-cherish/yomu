@@ -10,6 +10,7 @@ import { Route as SettingsRoute } from "./routes/settings";
 import { Route as SettingsGeneralRoute } from "./routes/settings.general";
 import { Route as SettingsLibraryRoute } from "./routes/settings.library";
 import { Route as SettingsDisplayRoute } from "./routes/settings.display";
+import { Route as SettingsBackupRoute } from "./routes/settings.backup";
 import { Route as BookBookIdRoute } from "./routes/book.$bookId";
 import { Route as ReaderBookIdRoute } from "./routes/reader.$bookId";
 
@@ -62,6 +63,13 @@ declare module "@tanstack/react-router" {
       path: "/display";
       fullPath: "/settings/display";
       preLoaderRoute: typeof SettingsDisplayRoute;
+      parentRoute: typeof SettingsRoute;
+    };
+    "/settings/backup": {
+      id: "/settings/backup";
+      path: "/backup";
+      fullPath: "/settings/backup";
+      preLoaderRoute: typeof SettingsBackupRoute;
       parentRoute: typeof SettingsRoute;
     };
     "/book/$bookId": {
@@ -124,6 +132,12 @@ const SettingsDisplayRouteWithParent = SettingsDisplayRoute.update({
   getParentRoute: () => SettingsRouteWithParent,
 } as any);
 
+const SettingsBackupRouteWithParent = SettingsBackupRoute.update({
+  id: "/settings/backup",
+  path: "/backup",
+  getParentRoute: () => SettingsRouteWithParent,
+} as any);
+
 const BookBookIdRouteWithParent = BookBookIdRoute.update({
   id: "/book/$bookId",
   path: "/book/$bookId",
@@ -144,6 +158,7 @@ export interface FileRoutesByFullPath {
   "/settings/general": typeof SettingsGeneralRouteWithParent;
   "/settings/library": typeof SettingsLibraryRouteWithParent;
   "/settings/display": typeof SettingsDisplayRouteWithParent;
+  "/settings/backup": typeof SettingsBackupRouteWithParent;
   "/book/$bookId": typeof BookBookIdRouteWithParent;
   "/reader/$bookId": typeof ReaderBookIdRouteWithParent;
 }
@@ -157,6 +172,7 @@ export const routeTree = rootRoute
       SettingsGeneralRoute: SettingsGeneralRouteWithParent,
       SettingsLibraryRoute: SettingsLibraryRouteWithParent,
       SettingsDisplayRoute: SettingsDisplayRouteWithParent,
+      SettingsBackupRoute: SettingsBackupRouteWithParent,
     }),
     BookBookIdRoute: BookBookIdRouteWithParent,
     ReaderBookIdRoute: ReaderBookIdRouteWithParent,
