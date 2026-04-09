@@ -2,6 +2,8 @@
 import { createRootRoute, Outlet, useNavigate, useRouterState } from "@tanstack/react-router";
 import { AppShell } from "@/components/layout/AppShell";
 import { DebugPanel } from "@/components/DebugPanel";
+import { useTheme } from "@/hooks/useTheme";
+import { useSettingsStore } from "@/stores/settings";
 import { ArrowLeft } from "lucide-react";
 
 export const Route = createRootRoute({
@@ -12,21 +14,25 @@ export const Route = createRootRoute({
 
 /**
  * 根布局组件
- * @returns 渲染根布局或阅读器
  */
 function RootLayout() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const isReader = pathname.startsWith("/reader/");
+  const readerNightMode = useSettingsStore((s) => s.readerNightMode);
+
+  // 同步主题到 <html data-theme>
+  useTheme();
 
   return (
     <>
       {isReader ? <Outlet /> : <AppShell />}
+      {isReader && readerNightMode && <div className="reader-night-filter" />}
       <DebugPanel />
     </>
   );
 }
 
-/** 全局错误边界（修 P1-8） */
+/** 全局错误边界 */
 function RootError({ error }: { error: unknown }) {
   const navigate = useNavigate();
   return (
@@ -49,7 +55,7 @@ function RootError({ error }: { error: unknown }) {
   );
 }
 
-/** 404 页面（修 P1-8） */
+/** 404 页面 */
 function NotFound() {
   const navigate = useNavigate();
   return (

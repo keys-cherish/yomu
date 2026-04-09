@@ -8,6 +8,16 @@ import { getCurrentWindow, currentMonitor, LogicalSize, LogicalPosition } from "
 import { logger } from "./lib/logger";
 import "./styles/globals.css";
 
+// 在 React 渲染前立即应用已持久化的主题（防止闪烁）
+try {
+  const stored = localStorage.getItem("yomu-settings");
+  if (stored) {
+    const parsed = JSON.parse(stored);
+    const theme = parsed?.state?.theme ?? "dark";
+    document.documentElement.setAttribute("data-theme", theme);
+  }
+} catch { /* ignore */ }
+
 // 创建路由实例
 const router = createRouter({ routeTree });
 
