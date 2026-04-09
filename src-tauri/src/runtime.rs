@@ -7,7 +7,6 @@ use crate::{db, protocol};
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_dialog::init())
-        .plugin(tauri_plugin_fs::init())
         .plugin(
             // 日志系统：所有模式都启用（不再限制 debug_assertions）
             // - Debug 模式：Info 级别
