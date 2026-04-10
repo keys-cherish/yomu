@@ -50,10 +50,10 @@ async function adjustWindowSize() {
     const screenW = monitor.size.width / scale;
     const screenH = monitor.size.height / scale;
 
-    const minW = 400;
-    const minH = 400;
-    const w = Math.max(minW, Math.round(screenW * 0.8));
-    const h = Math.max(minH, Math.round(screenH * 0.8));
+    const minW = 1000;
+    const minH = 700;
+    const targetW = Math.max(minW, Math.round(screenW * 0.82));
+    const targetH = Math.max(minH, Math.round(screenH * 0.86));
 
     await win.setSize(new LogicalSize(w, h));
 
