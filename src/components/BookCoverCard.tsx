@@ -21,6 +21,8 @@ interface BookCoverCardProps {
 // 格式标签显示映射
 const FORMAT_LABELS: Record<string, string> = {
   cbz: "CBZ",
+  cbr: "CBR",
+  cb7: "CB7",
   epub: "EPUB",
   mobi: "MOBI",
 };

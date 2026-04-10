@@ -2,7 +2,28 @@
 
 ## 本次更新 (feat/library-management-and-series)
 
-> 基于 `master` (e6608c8) 的完整审阅、bug 修复、功能补全与 WebDAV 备份。
+> 基于 `master` (e6608c8) 的完整审阅、bug 修复、功能补全、WebDAV 备份、主题系统与多格式支持。
+
+---
+
+### 新增格式支持
+
+- **CBR / RAR**：通过 `unrar` crate 支持 RAR 压缩漫画的扫描、封面提取、逐页阅读和预热缓存
+- **CB7 / 7z**：通过 `sevenz-rust` crate 支持 7-Zip 压缩漫画的扫描、封面提取、逐页阅读和预热缓存
+- 完整链路：`detect_format` → `process_book` → `extract_cover` → `extract_page` → `warm_cache` 全部覆盖
+
+### 主题系统
+
+- 三种模式：深色（默认）/ 浅色（暖纸色调）/ 跟随系统
+- CSS 自定义属性 + `[data-theme]` 切换，`prefers-color-scheme` 媒体查询支持系统跟随
+- 阅读器独立的夜间暖色滤镜（`mix-blend-mode: multiply`，减少蓝光）
+
+### 架构改进
+
+- 恢复 `decorations: true`：消灭 Windows 自定义标题栏整类 bug
+- 锁死所有关键依赖版本（Rust `=x.y.z`，JS 去 `^`）
+- 新增 `src/lib/platform.ts`：Tauri API 隔离层
+- 移除 `tauri-plugin-fs`（未使用，减少攻击面）
 
 ---
 

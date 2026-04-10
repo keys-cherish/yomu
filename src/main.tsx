@@ -4,8 +4,19 @@ import ReactDOM from "react-dom/client";
 import { RouterProvider, createRouter } from "@tanstack/react-router";
 import { routeTree } from "./routeTree.gen";
 import { invoke } from "@tauri-apps/api/core";
-import { getCurrentWindow, currentMonitor, LogicalSize} from "@tauri-apps/api/window";
+import { getCurrentWindow, currentMonitor, LogicalSize, LogicalPosition } from "@tauri-apps/api/window";
+import { logger } from "./lib/logger";
 import "./styles/globals.css";
+
+// 在 React 渲染前立即应用已持久化的主题（防止闪烁）
+try {
+  const stored = localStorage.getItem("yomu-settings");
+  if (stored) {
+    const parsed = JSON.parse(stored);
+    const theme = parsed?.state?.theme ?? "dark";
+    document.documentElement.setAttribute("data-theme", theme);
+  }
+} catch { /* ignore */ }
 
 // 创建路由实例
 const router = createRouter({ routeTree });
@@ -44,11 +55,20 @@ async function adjustWindowSize() {
     const targetW = Math.max(minW, Math.round(screenW * 0.82));
     const targetH = Math.max(minH, Math.round(screenH * 0.86));
 
-    await win.unmaximize();
-    await win.setSize(new LogicalSize(targetW, targetH));
-    await win.center();
+    await win.setSize(new LogicalSize(w, h));
+
+    // 居中
+    const x = Math.round((screenW - w) / 2);
+    const y = Math.round((screenH - h) / 2);
+    await win.setPosition(new LogicalPosition(Math.max(0, x), Math.max(0, y)));
+
+    // 窗口初始 visible=false，调整完尺寸后再显示（修 P2-5 启动闪烁）
+    await win.show();
   } catch (e) {
     console.error("Failed to adjust window size:", e);
+    logger.error("Failed to adjust window size", e);
+    // 即使调整失败也要显示窗口
+    try { await getCurrentWindow().show(); } catch { /* ignore */ }
   }
 }
 

@@ -4,14 +4,7 @@ import { invoke } from "@tauri-apps/api/core";
 import { open } from "@tauri-apps/plugin-dialog";
 import { createFileRoute } from "@tanstack/react-router";
 import { FolderOpen, Plus, RefreshCw, Trash2 } from "lucide-react";
-
-interface Library {
-  id: number;
-  path: string;
-  name: string | null;
-  created_at: number;
-  last_scan: number | null;
-}
+import type { Library } from "@/lib/types";
 
 export const Route = createFileRoute("/settings/library")({
   component: LibrarySettings,

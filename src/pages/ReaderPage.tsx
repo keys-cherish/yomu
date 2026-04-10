@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { useNavigate } from "@tanstack/react-router";
+import { logger } from "@/lib/logger";
 import {
   ArrowLeft,
   ArrowLeftRight,
@@ -82,7 +83,7 @@ export function ReaderPage() {
     invoke<BookInfo>("get_book_by_hash", { hash: bookId })
       .then(setBook)
       .catch((e) => {
-        console.error("Failed to load book info:", e);
+        logger.error("Failed to load book info", e);
         setLoadError(String(e));
       });
   }, [bookId]);

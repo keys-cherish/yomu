@@ -260,13 +260,8 @@ export function useReaderControls({
     setShowToolbar((prev) => !prev);
   }, []);
 
-  // 保存进入全屏前的窗口位置和大小，退出时恢复
-  const savedWindowBounds = useRef<{ x: number; y: number; w: number; h: number } | null>(null);
-
   /**
-   * 手动模拟全屏（修复 Windows decorations=false + setFullscreen 时任务栏不隐藏的问题）。
-   * 原理：记住窗口位置 → 把窗口拉到覆盖整个显示器（含任务栏区域）+ 置顶。
-   * 退出时恢复原始位置/大小 + 取消置顶。
+   * 原生全屏切换（decorations=true 模式下，系统标题栏自动隐藏/显示）
    */
   const toggleFullscreen = useCallback(async () => {
     const win = getCurrentWindow();
@@ -321,21 +316,16 @@ export function useReaderControls({
 
   useEffect(() => {
     return () => {
-      // 离开阅读器时恢复窗口（如果处于模拟全屏状态）
+      // 离开阅读器时退出全屏
       const win = getCurrentWindow();
-      win.setAlwaysOnTop(false).catch(() => {});
-      const b = savedWindowBounds.current;
-      if (b) {
-        win.setSize(new LogicalSize(b.w, b.h)).catch(() => {});
-        win.setPosition(new LogicalPosition(b.x, b.y)).catch(() => {});
-        savedWindowBounds.current = null;
-      }
+      win.isFullscreen()
+        .then((fs) => { if (fs) win.setFullscreen(false).catch(() => {}); })
+        .catch(() => {});
     };
   }, []);
 
   const handleBack = useCallback(async () => {
-    // 进度由 unmount cleanup 统一保存，这里不重复调用（修 P1-10）
-    // 窗口恢复由 unmount cleanup 统一处理
+    // 进度由 unmount cleanup 统一保存
     const win = getCurrentWindow();
     await win.setAlwaysOnTop(false).catch(() => {});
     const b = savedWindowBounds.current;

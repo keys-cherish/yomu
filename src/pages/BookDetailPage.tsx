@@ -5,20 +5,7 @@ import { Route } from "@/routes/book.$bookId";
 import { ArrowLeft, BookOpen } from "lucide-react";
 import { useNavigate } from "@tanstack/react-router";
 import { getCoverUrl } from "@/lib/comic-url";
-
-interface Book {
-  id: number;
-  hash: string;
-  title: string;
-  path: string;
-  file_size: number | null;
-  page_count: number | null;
-  format: string;
-  read_progress: number;
-  is_favorite: boolean;
-  added_at: number;
-  series_name: string | null;
-}
+import type { Book } from "@/lib/types";
 
 /**
  * 书籍详情页组件

@@ -13,18 +13,17 @@ name = "yomu_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
 [build-dependencies]
-tauri-build = { version = "2", features = [] }
+tauri-build = "=2.5.6"
 
 [dependencies]
 serde_json = "1"
 serde = { version = "1", features = ["derive"] }
 log = "0.4"
-tauri = { version = "2", features = [] }
-tauri-plugin-log = "2"
-tauri-plugin-dialog = "2"
-tauri-plugin-fs = "2"
+tauri = { version = "=2.10.3", features = [] }
+tauri-plugin-log = "=2.8.0"
+tauri-plugin-dialog = "=2.7.0"
 tokio = { version = "1", features = ["full"] }
-rusqlite = { version = "0.34", features = ["bundled"] }
+rusqlite = { version = "=0.34.0", features = ["bundled"] }
 zip = "2"
 image = "0.25"
 webp = "0.3"
@@ -32,4 +31,6 @@ sha2 = "0.10"
 walkdir = "2"
 natord = "1.0"
 mobi = "0.8"
-reqwest = { version = "0.12", features = ["rustls-tls"], default-features = false }
+unrar = "0.5"
+sevenz-rust = "0.6"
+reqwest = { version = "=0.12.28", features = ["rustls-tls"], default-features = false }

@@ -4,6 +4,8 @@ use super::discovery::detect_format;
 use super::epub::count_epub_pages;
 use super::hash::compute_file_hash;
 use super::mobi::count_mobi_images;
+use super::rar::list_rar_images;
+use super::sevenz::list_7z_images;
 use super::types::{BookFormat, ScannedBook};
 use super::zip::list_zip_images;
 
@@ -14,6 +16,8 @@ pub fn extract_cover(path: &Path, max_height: u32) -> Result<Vec<u8>, Box<dyn st
 
     match format {
         BookFormat::Cbz => super::zip::extract_cbz_cover(path, max_height),
+        BookFormat::Cbr => super::rar::extract_cbr_cover(path, max_height),
+        BookFormat::Cb7 => super::sevenz::extract_cb7_cover(path, max_height),
         BookFormat::Epub => super::epub::extract_epub_cover(path, max_height),
         BookFormat::Mobi => super::mobi::extract_mobi_cover(path, max_height),
     }
@@ -46,6 +50,8 @@ pub fn process_book(
 
     let page_count = match format {
         BookFormat::Cbz => list_zip_images(path)?.len() as i64,
+        BookFormat::Cbr => list_rar_images(path)?.len() as i64,
+        BookFormat::Cb7 => list_7z_images(path)?.len() as i64,
         BookFormat::Epub => count_epub_pages(path).unwrap_or(1),
         BookFormat::Mobi => count_mobi_images(path).unwrap_or(1),
     };

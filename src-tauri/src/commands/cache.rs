@@ -48,6 +48,18 @@ pub async fn warm_cache(
             None
         };
 
+        let cbr_images: Option<Vec<String>> = if ext == "cbr" || ext == "rar" {
+            crate::scanner::list_rar_images(&path).ok()
+        } else {
+            None
+        };
+
+        let cb7_images: Option<Vec<String>> = if ext == "cb7" || ext == "7z" {
+            crate::scanner::list_7z_images(&path).ok()
+        } else {
+            None
+        };
+
         let mut epub_archive = if ext == "epub" {
             std::fs::File::open(&path)
                 .ok()
@@ -68,6 +80,18 @@ pub async fn warm_cache(
                     cbz_images.as_ref().and_then(|images| {
                         let image_name = images.get(page_index)?;
                         crate::scanner::extract_file_from_zip(&path, image_name).ok()
+                    })
+                }
+                "cbr" | "rar" => {
+                    cbr_images.as_ref().and_then(|images| {
+                        let image_name = images.get(page_index)?;
+                        crate::scanner::extract_file_from_rar(&path, image_name).ok()
+                    })
+                }
+                "cb7" | "7z" => {
+                    cb7_images.as_ref().and_then(|images| {
+                        let image_name = images.get(page_index)?;
+                        crate::scanner::extract_file_from_7z(&path, image_name).ok()
                     })
                 }
                 "epub" => {

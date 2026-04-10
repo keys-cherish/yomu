@@ -5,16 +5,7 @@ import { useNavigate } from "@tanstack/react-router";
 import { Route } from "@/routes/search";
 import { Search as SearchIcon, X } from "lucide-react";
 import { BookCoverCard } from "@/components/BookCoverCard";
-
-interface Book {
-  id: number;
-  hash: string;
-  title: string;
-  format: string;
-  page_count: number | null;
-  read_progress: number;
-  series_name: string | null;
-}
+import type { Book } from "@/lib/types";
 
 /**
  * 搜索页面组件

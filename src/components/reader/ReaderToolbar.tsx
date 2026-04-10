@@ -1,6 +1,5 @@
-import { getCurrentWindow } from "@tauri-apps/api/window";
 import { AnimatePresence, motion } from "motion/react";
-import { ArrowLeft, Maximize, Minimize, Minus, Square, X } from "lucide-react";
+import { ArrowLeft, Maximize, Minimize } from "lucide-react";
 import { ReaderToolbarDropdown } from "./ReaderToolbarDropdown";
 import type {
   ReaderDirectionOption,
@@ -78,9 +77,9 @@ export function ReaderToolbar({
             className="absolute top-0 left-0 right-0 z-50"
           >
             <div
-              className={`flex items-center justify-between px-4 py-3 bg-gradient-to-b from-black/60 to-transparent ${!isFullscreen ? "drag-region" : ""}`}
+              className="flex items-center justify-between px-4 py-3 bg-gradient-to-b from-black/60 to-transparent"
             >
-              <div className="no-drag flex items-center gap-3 min-w-0">
+              <div className="flex items-center gap-3 min-w-0">
                 <button
                   onClick={onBack}
                   className="shrink-0 inline-flex items-center justify-center w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 transition-colors"
@@ -89,34 +88,13 @@ export function ReaderToolbar({
                   <ArrowLeft size={24} className="text-white" />
                 </button>
               </div>
-              <div className="no-drag flex items-center gap-1">
+              <div className="flex items-center gap-1">
                 <button
                   onClick={onToggleFullscreen}
                   className="inline-flex items-center justify-center w-12 h-12 text-white/70 hover:text-white bg-white/10 hover:bg-white/20 rounded-full transition-colors"
                   aria-label={isFullscreen ? "退出全屏" : "全屏"}
                 >
                   {isFullscreen ? <Minimize size={22} /> : <Maximize size={22} />}
-                </button>
-                <button
-                  onClick={() => getCurrentWindow().minimize()}
-                  className="inline-flex items-center justify-center w-12 h-12 text-white/70 hover:text-white hover:bg-white/15 rounded-full transition-colors"
-                  aria-label="最小化"
-                >
-                  <Minus size={22} />
-                </button>
-                <button
-                  onClick={() => getCurrentWindow().toggleMaximize()}
-                  className="inline-flex items-center justify-center w-12 h-12 text-white/70 hover:text-white hover:bg-white/15 rounded-full transition-colors"
-                  aria-label="最大化"
-                >
-                  <Square size={16} />
-                </button>
-                <button
-                  onClick={() => getCurrentWindow().close()}
-                  className="inline-flex items-center justify-center w-12 h-12 text-white/70 hover:text-red-400 hover:bg-red-500/20 rounded-full transition-colors"
-                  aria-label="关闭"
-                >
-                  <X size={22} />
                 </button>
               </div>
             </div>

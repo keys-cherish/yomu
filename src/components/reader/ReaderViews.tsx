@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, forwardRef } from "react";
+import { useCallback, useEffect, useMemo, useRef, forwardRef } from "react";
 import { Virtuoso, type VirtuosoHandle } from "react-virtuoso";
 import { AnimatePresence, motion } from "motion/react";
 import type { ReadingDirection, FitMode } from "@/stores/settings";

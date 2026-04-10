@@ -14,6 +14,8 @@ pub(crate) fn extract_and_maybe_transcode(
 ) -> Result<(Vec<u8>, String), Box<dyn std::error::Error + Send + Sync>> {
     let raw_bytes = match book_info.format.as_str() {
         "cbz" => extract_cbz_page(&book_info.path, page_index),
+        "cbr" => extract_cbr_page(&book_info.path, page_index),
+        "cb7" => extract_cb7_page(&book_info.path, page_index),
         "epub" => extract_epub_page(&book_info.path, book_hash, page_index),
         "mobi" => extract_mobi_page(&book_info.path, page_index),
         _ => Err(format!("Unsupported format: {}", book_info.format).into()),
@@ -45,6 +47,18 @@ fn extract_cbz_page(path: &PathBuf, page_index: usize) -> Result<Vec<u8>, Box<dy
     let images = scanner::list_zip_images(path)?;
     let image_name = images.get(page_index).ok_or("Page index out of range")?;
     scanner::extract_file_from_zip(path, image_name)
+}
+
+fn extract_cbr_page(path: &PathBuf, page_index: usize) -> Result<Vec<u8>, Box<dyn std::error::Error>> {
+    let images = scanner::list_rar_images(path)?;
+    let image_name = images.get(page_index).ok_or("Page index out of range")?;
+    scanner::extract_file_from_rar(path, image_name)
+}
+
+fn extract_cb7_page(path: &PathBuf, page_index: usize) -> Result<Vec<u8>, Box<dyn std::error::Error>> {
+    let images = scanner::list_7z_images(path)?;
+    let image_name = images.get(page_index).ok_or("Page index out of range")?;
+    scanner::extract_file_from_7z(path, image_name)
 }
 
 fn extract_epub_page(path: &PathBuf, book_hash: &str, page_index: usize) -> Result<Vec<u8>, Box<dyn std::error::Error>> {

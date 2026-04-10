@@ -114,17 +114,17 @@
 
 ---
 
-## 🟡 P2-1 ReaderPage 的 Book 接口与后端 Rust 结构体不一致
+## ✅ P2-1 ReaderPage 的 Book 接口与后端 Rust 结构体不一致
 
-- **位置**：`src/components/reader/types.ts::BookInfo` 与 `src-tauri/src/db/models.rs::Book`
-- **建议修复**：在前端定义一个完整 `Book` 类型，所有页面共享。
+- **状态**：已修复 — 创建 `src/lib/types.ts` 统一 Book/Library 类型
+- **位置**：`src/lib/types.ts`
 
 ---
 
-## 🟡 P2-2 LibraryPage 直接内联 Book 接口定义
+## ✅ P2-2 LibraryPage 直接内联 Book 接口定义
 
-- **位置**：`src/pages/LibraryPage.tsx`
-- **建议修复**：抽到共享类型文件。
+- **状态**：已修复 — 所有页面改用 `import type { Book } from "@/lib/types"`
+- **位置**：`src/pages/LibraryPage.tsx`、`BookDetailPage.tsx`、`SearchPage.tsx`
 
 ---
 
@@ -142,10 +142,10 @@
 
 ---
 
-## 🟡 P2-5 main.tsx 的 adjustWindowSize 会产生启动闪烁
+## ✅ P2-5 main.tsx 的 adjustWindowSize 会产生启动闪烁
 
-- **位置**：`src/main.tsx`
-- **建议修复**：初始窗口设为隐藏，调整完再 show()。
+- **状态**：已修复 — `tauri.conf.json` 设 `visible: false`，调整完尺寸后调 `win.show()`
+- **位置**：`src-tauri/tauri.conf.json`、`src/main.tsx`
 
 ---
 
@@ -156,10 +156,10 @@
 
 ---
 
-## 🟡 P2-7 ReaderToolbar 与 TitleBar 功能重复
+## ✅ P2-7 ReaderToolbar 与 TitleBar 功能重复
 
-- **位置**：`src/components/reader/ReaderToolbar.tsx`、`src/components/layout/TitleBar.tsx`
-- **建议修复**：抽出 `<WindowControls>` 共用。
+- **状态**：已修复 — 抽出 `<WindowControls>` 组件，两处共用
+- **位置**：`src/components/layout/WindowControls.tsx`
 
 ---
 
@@ -187,4 +187,4 @@
 
 | 编号 | 优先级 | 概要 |
 |---|---|---|
-| P2-1 ~ P2-5, P2-7, P2-8 | 🟡 | 类型共享、代码重复、启动闪烁等 |
+| P2-3, P2-4, P2-8 | 🟡 | preloadedSet 无上限、detect_ext 重复、sr-only 预渲染 |
