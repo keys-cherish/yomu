@@ -55,11 +55,11 @@ async function adjustWindowSize() {
     const targetW = Math.max(minW, Math.round(screenW * 0.82));
     const targetH = Math.max(minH, Math.round(screenH * 0.86));
 
-    await win.setSize(new LogicalSize(w, h));
+    await win.setSize(new LogicalSize(targetW, targetH));
 
     // 居中
-    const x = Math.round((screenW - w) / 2);
-    const y = Math.round((screenH - h) / 2);
+    const x = Math.round((screenW - targetW) / 2);
+    const y = Math.round((screenH - targetH) / 2);
     await win.setPosition(new LogicalPosition(Math.max(0, x), Math.max(0, y)));
 
     // 窗口初始 visible=false，调整完尺寸后再显示（修 P2-5 启动闪烁）

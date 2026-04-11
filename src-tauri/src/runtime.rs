@@ -50,10 +50,10 @@ pub fn run() {
 
             // 启动时后台自动重扫所有已保存的书库
             let handle = app.handle().clone();
-            tokio::spawn(async move {
+            tauri::async_runtime::spawn(async move {
                 auto_rescan_libraries(&handle).await;
             });
-
+            
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
