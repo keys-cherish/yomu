@@ -12,7 +12,7 @@ export function TitleBar() {
 
   return (
     <div
-      className="section-rule flex h-10 shrink-0 items-center border-b border-[var(--color-border-strong)]/80 bg-[#0a0a0a]/92 px-4 select-none backdrop-blur-md"
+      className="section-rule flex h-10 shrink-0 items-center border-b border-[var(--color-border-strong)]/80 bg-bg-surface/92 px-4 select-none backdrop-blur-md"
     >
       <div className="flex items-center gap-3">
         <button

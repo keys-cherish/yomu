@@ -38,7 +38,7 @@ export function Sidebar({ collapsed }: SidebarProps) {
   if (collapsed) return null;
 
   return (
-    <aside className="flex h-full min-w-[248px] w-[248px] shrink-0 flex-col border-r border-[var(--color-border-strong)]/80 bg-[#0b0b0b]">
+    <aside className="flex h-full min-w-[248px] w-[248px] shrink-0 flex-col border-r border-[var(--color-border-strong)]/80 bg-bg-surface-2">
       <div className="section-rule px-5 py-5">
         <div className="data-label mb-3">Library Index</div>
         <div className="text-[28px] font-semibold tracking-[0.08em] text-text-primary uppercase">

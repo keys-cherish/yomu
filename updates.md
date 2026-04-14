@@ -1,6 +1,35 @@
 # Yomu 更新日志
 
-## 本次更新 (feat/library-management-and-series)
+## 本次更新 (2026-04-14)
+
+> 基于 `master` (307c48b) 的 bug 修复、阅读增强和主题完善。
+
+---
+
+### Bug 修复
+
+| 编号 | 问题 | 修复方式 | 文件 |
+|---|---|---|---|
+| P1-11 | 浅色主题下侧边栏背景仍为黑色 | `bg-[#0b0b0b]` 改为 `bg-bg-surface-2` 主题变量 | `src/components/layout/Sidebar.tsx` |
+| P1-12 | 浅色主题下顶部标题栏背景仍为黑色 | `bg-[#0a0a0a]/92` 改为 `bg-bg-surface/92` 主题变量 | `src/components/layout/TitleBar.tsx` |
+| P1-13 | 全屏模式左侧存在缝隙（手动计算窗口位置导致） | 改用原生 `setFullscreen(true/false)` API，彻底消除边框偏移 | `src/components/reader/useReaderControls.ts` |
+
+### 新功能
+
+#### 图像增强阅读选项
+
+- **锐化**：轻微对比度+饱和度提升，模拟视觉锐利感
+- **色彩增强**：提高对比度和饱和度，让漫画颜色更鲜明
+- **文字增强**：高对比+略降亮度，让对话气泡中的文字更清晰可读
+- 三个按钮独立切换，可任意组合
+- 使用 CSS `filter` 实现，零后端开销，实时预览
+- 设置持久化到 Zustand store
+
+> 涉及文件：`src/stores/settings.ts`、`src/components/reader/ReaderPageImage.tsx`、`src/components/reader/ReaderViews.tsx`、`src/components/reader/ReaderToolbar.tsx`、`src/pages/ReaderPage.tsx`
+
+---
+
+## 历史更新 (feat/library-management-and-series)
 
 > 基于 `master` (e6608c8) 的完整审阅、bug 修复、功能补全、WebDAV 备份、主题系统与多格式支持。
 

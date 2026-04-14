@@ -13,6 +13,9 @@ import {
   RectangleHorizontal,
   RectangleVertical,
   Scroll,
+  Sparkles,
+  Contrast,
+  Type,
 } from "lucide-react";
 import { GestureLayer } from "@/components/GestureLayer";
 import {
@@ -47,6 +50,8 @@ export function ReaderPage() {
   const setDirection = useSettingsStore((s) => s.setReadingDirection);
   const fitMode = useSettingsStore((s) => s.fitMode);
   const setFitMode = useSettingsStore((s) => s.setFitMode);
+  const imageEnhance = useSettingsStore((s) => s.imageEnhance);
+  const setImageEnhance = useSettingsStore((s) => s.setImageEnhance);
 
   const totalPages = book?.page_count ?? 0;
 
@@ -113,6 +118,30 @@ export function ReaderPage() {
     );
   }
 
+  const enhanceButtons = [
+    {
+      key: "sharpen",
+      icon: Sparkles,
+      label: "锐化",
+      active: imageEnhance.sharpen,
+      onToggle: () => setImageEnhance({ sharpen: !imageEnhance.sharpen }),
+    },
+    {
+      key: "contrast",
+      icon: Contrast,
+      label: "色彩增强",
+      active: imageEnhance.contrastBoost,
+      onToggle: () => setImageEnhance({ contrastBoost: !imageEnhance.contrastBoost }),
+    },
+    {
+      key: "text",
+      icon: Type,
+      label: "文字增强",
+      active: imageEnhance.textEnhance,
+      onToggle: () => setImageEnhance({ textEnhance: !imageEnhance.textEnhance }),
+    },
+  ];
+
   return (
     <div className="reader-view fixed inset-0 flex flex-col select-none">
       <ReaderToolbar
@@ -139,6 +168,7 @@ export function ReaderPage() {
         onSliderChange={controls.handleSliderChange}
         onSliderMouseDown={controls.handleSliderMouseDown}
         onSliderMouseUp={controls.handleSliderMouseUp}
+        enhanceButtons={enhanceButtons}
       />
 
       <GestureLayer
@@ -160,6 +190,7 @@ export function ReaderPage() {
             initialPage={controls.currentPage}
             scrollToPage={controls.currentPage}
             scrollRequestId={controls.scrollRequestId}
+            imageEnhance={imageEnhance}
             onVisiblePageChange={controls.handleVisiblePageChange}
           />
         ) : (
@@ -172,6 +203,7 @@ export function ReaderPage() {
             direction={direction}
             fitMode={fitMode}
             slideDirection={controls.slideDirection}
+            imageEnhance={imageEnhance}
             onSlideComplete={() => controls.setSlideDirection("none")}
           />
         )}

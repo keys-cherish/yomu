@@ -9,13 +9,13 @@ importers:
   .:
     dependencies:
       '@tanstack/react-router':
-        specifier: ^1.168.10
+        specifier: 1.168.10
         version: 1.168.10(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       '@tauri-apps/api':
-        specifier: ^2.10.1
+        specifier: 2.10.1
         version: 2.10.1
       '@tauri-apps/plugin-dialog':
-        specifier: ^2.7.0
+        specifier: 2.7.0
         version: 2.7.0
       lucide-react:
         specifier: ^1.7.0
@@ -23,30 +23,33 @@ importers:
       motion:
         specifier: ^12.38.0
         version: 12.38.0(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+      page-flip:
+        specifier: ^2.0.7
+        version: 2.0.7
       react:
-        specifier: ^19.2.4
+        specifier: 19.2.4
         version: 19.2.4
       react-dom:
-        specifier: ^19.2.4
+        specifier: 19.2.4
         version: 19.2.4(react@19.2.4)
       react-virtuoso:
-        specifier: ^4.18.4
+        specifier: 4.18.4
         version: 4.18.4(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       zod:
         specifier: ^4.3.6
         version: 4.3.6
       zustand:
-        specifier: ^5.0.12
+        specifier: 5.0.12
         version: 5.0.12(@types/react@19.2.14)(react@19.2.4)(use-sync-external-store@1.6.0(react@19.2.4))
     devDependencies:
       '@tailwindcss/vite':
         specifier: ^4
         version: 4.2.2(vite@6.4.1(jiti@2.6.1)(lightningcss@1.32.0))
       '@tanstack/react-router-devtools':
-        specifier: ^1.166.11
+        specifier: 1.166.11
         version: 1.166.11(@tanstack/react-router@1.168.10(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(@tanstack/router-core@1.168.9)(csstype@3.2.3)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       '@tauri-apps/cli':
-        specifier: ^2.10.1
+        specifier: 2.10.1
         version: 2.10.1
       '@types/react':
         specifier: ^19.2.14
@@ -949,6 +952,9 @@ packages:
   node-releases@2.0.36:
     resolution: {integrity: sha512-TdC8FSgHz8Mwtw9g5L4gR/Sh9XhSP/0DEkQxfEFXOpiul5IiHgHan2VhYYb6agDSfp4KuvltmGApc8HMgUrIkA==}
 
+  page-flip@2.0.7:
+    resolution: {integrity: sha512-96lQFUUz7r/LZzEUZJ3yBIMEKU9+m8HMFDzTvTdD6P7Ag/wXINjp9n0W7b4wanwnDbQETo4uNUoL3zMqpFxwGA==}
+
   picocolors@1.1.1:
     resolution: {integrity: sha512-xceH2snhtb5M9liqDsmEw56le376mTZkEX/jEb/RxNFyegNul7eNslCXP9FDj/Lcu0X8KEyMceP2ntpaHrDEVA==}
 
@@ -1775,6 +1781,8 @@ snapshots:
   nanoid@3.3.11: {}
 
   node-releases@2.0.36: {}
+
+  page-flip@2.0.7: {}
 
   picocolors@1.1.1: {}
 

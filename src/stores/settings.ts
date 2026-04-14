@@ -15,6 +15,13 @@ export type FitMode = "height" | "width" | "contain";
 /** 界面主题 */
 export type ThemeMode = "dark" | "light" | "system";
 
+/** 图像增强选项 */
+export interface ImageEnhanceOptions {
+  sharpen: boolean;
+  contrastBoost: boolean;
+  textEnhance: boolean;
+}
+
 /** WebDAV 配置 */
 export interface WebDavConfig {
   url: string;
@@ -30,6 +37,7 @@ interface SettingsState {
   fitMode: FitMode;
   theme: ThemeMode;
   readerNightMode: boolean;
+  imageEnhance: ImageEnhanceOptions;
   webdav: WebDavConfig;
   toggleSidebar: () => void;
   setReadingMode: (mode: ReadingMode) => void;
@@ -37,6 +45,7 @@ interface SettingsState {
   setFitMode: (mode: FitMode) => void;
   setTheme: (theme: ThemeMode) => void;
   setReaderNightMode: (on: boolean) => void;
+  setImageEnhance: (options: Partial<ImageEnhanceOptions>) => void;
   setWebDav: (config: Partial<WebDavConfig>) => void;
 }
 
@@ -52,6 +61,7 @@ export const useSettingsStore = create<SettingsState>()(
       fitMode: "height",
       theme: "dark",
       readerNightMode: false,
+      imageEnhance: { sharpen: false, contrastBoost: false, textEnhance: false },
       webdav: { url: "", username: "", password: "" },
       toggleSidebar: () => set((s) => ({ sidebarCollapsed: !s.sidebarCollapsed })),
       setReadingMode: (mode) => set({ readingMode: mode }),
@@ -59,11 +69,12 @@ export const useSettingsStore = create<SettingsState>()(
       setFitMode: (mode) => set({ fitMode: mode }),
       setTheme: (theme) => set({ theme }),
       setReaderNightMode: (on) => set({ readerNightMode: on }),
+      setImageEnhance: (options) => set((s) => ({ imageEnhance: { ...s.imageEnhance, ...options } })),
       setWebDav: (config) => set((s) => ({ webdav: { ...s.webdav, ...config } })),
     }),
     {
       name: "yomu-settings",
-      version: 3,
+      version: 4,
       migrate: (persisted: unknown, version: number) => {
         const state = persisted as Record<string, unknown>;
         if (version === 0 && state.fitMode === "original") {
@@ -75,6 +86,11 @@ export const useSettingsStore = create<SettingsState>()(
         if (version < 3) {
           if (!state.theme) state.theme = "dark";
           if (state.readerNightMode === undefined) state.readerNightMode = false;
+        }
+        if (version < 4) {
+          if (!state.imageEnhance) {
+            state.imageEnhance = { sharpen: false, contrastBoost: false, textEnhance: false };
+          }
         }
         return state as unknown as SettingsState;
       },

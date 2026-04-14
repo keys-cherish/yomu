@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, forwardRef } from "react";
 import { Virtuoso, type VirtuosoHandle } from "react-virtuoso";
 import { AnimatePresence, motion } from "motion/react";
 import type { ReadingDirection, FitMode } from "@/stores/settings";
+import type { ImageEnhanceOptions } from "@/stores/settings";
 import { getPageUrl } from "@/lib/comic-url";
 import { ReaderPageImage } from "./ReaderPageImage";
 import { ReaderDoublePageSpread } from "./ReaderDoublePageSpread";
@@ -15,12 +16,13 @@ interface ReaderScrollViewProps {
   initialPage: number;
   scrollToPage: number;
   scrollRequestId: number;
+  imageEnhance?: ImageEnhanceOptions;
   onVisiblePageChange: (page: number) => void;
 }
 
 /** 卷轴模式视图：用 react-virtuoso 虚拟化渲染，只在视口附近创建 DOM 节点（修 P0-1） */
 export const ReaderScrollView = forwardRef<HTMLDivElement, ReaderScrollViewProps>(
-  function ReaderScrollView({ bookHash, totalPages, fitMode, initialPage, scrollToPage, scrollRequestId, onVisiblePageChange }, ref) {
+  function ReaderScrollView({ bookHash, totalPages, fitMode, initialPage, scrollToPage, scrollRequestId, imageEnhance, onVisiblePageChange }, ref) {
     const virtuosoRef = useRef<VirtuosoHandle>(null);
     const scrollerRef = useRef<HTMLDivElement | null>(null);
     const mountedInitialPageRef = useRef(initialPage);
@@ -88,7 +90,7 @@ export const ReaderScrollView = forwardRef<HTMLDivElement, ReaderScrollViewProps
         className="flex-1 min-h-0"
         itemContent={(index) => (
           <div data-page-index={index} className="flex items-center justify-center">
-            <ReaderPageImage bookHash={bookHash} pageIndex={index} mode="scroll" fitMode={fitMode} lazy />
+            <ReaderPageImage bookHash={bookHash} pageIndex={index} mode="scroll" fitMode={fitMode} imageEnhance={imageEnhance} lazy />
           </div>
         )}
       />
@@ -104,13 +106,14 @@ interface ReaderPagedViewProps {
   direction: ReadingDirection;
   fitMode: FitMode;
   slideDirection: "left" | "right" | "none";
+  imageEnhance?: ImageEnhanceOptions;
   onSlideComplete: () => void;
 }
 
 /** 分页模式视图：负责单页/双页布局、翻页动画与邻页预渲染 */
 export const ReaderPagedView = forwardRef<HTMLDivElement, ReaderPagedViewProps>(
   function ReaderPagedView(
-    { bookHash, currentPage, totalPages, mode, direction, fitMode, slideDirection, onSlideComplete },
+    { bookHash, currentPage, totalPages, mode, direction, fitMode, slideDirection, imageEnhance, onSlideComplete },
     ref
   ) {
     const isRTL = direction === "rtl";
@@ -197,7 +200,7 @@ export const ReaderPagedView = forwardRef<HTMLDivElement, ReaderPagedViewProps>(
             }
           >
             {mode === "single" ? (
-              <ReaderPageImage bookHash={bookHash} pageIndex={currentPage} mode="single" fitMode={fitMode} />
+              <ReaderPageImage bookHash={bookHash} pageIndex={currentPage} mode="single" fitMode={fitMode} imageEnhance={imageEnhance} />
             ) : (
               <ReaderDoublePageSpread
                 bookHash={bookHash}

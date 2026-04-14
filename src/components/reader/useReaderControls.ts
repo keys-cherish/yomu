@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
-import { getCurrentWindow, currentMonitor, LogicalSize, LogicalPosition } from "@tauri-apps/api/window";
+import { getCurrentWindow } from "@tauri-apps/api/window";
 import type { FitMode, ReadingDirection, ReadingMode } from "@/stores/settings";
 
 interface UseReaderControlsParams {
@@ -48,7 +48,6 @@ export function useReaderControls({
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastSavedPageRef = useRef(initialPage);
   const wheelCooldown = useRef(false);
-  const savedWindowBounds = useRef<{ x: number; y: number; w: number; h: number } | null>(null);
 
   const isRTL = direction === "rtl";
   const isWidthFit = fitMode === "width" && mode !== "scroll";
@@ -220,54 +219,18 @@ export function useReaderControls({
   }, []);
 
   /**
-   * 原生全屏切换（decorations=true 模式下，系统标题栏自动隐藏/显示）
+   * 原生全屏切换（使用系统原生全屏 API，完全隐藏标题栏和边框）
    */
   const toggleFullscreen = useCallback(async () => {
     const win = getCurrentWindow();
-
-    if (!isFullscreen) {
-      // 进入全屏：保存当前位置，拉满屏幕
-      try {
-        const scaleFactor = await win.scaleFactor();
-        const pos = await win.outerPosition();
-        const size = await win.outerSize();
-        savedWindowBounds.current = {
-          x: pos.x / scaleFactor,
-          y: pos.y / scaleFactor,
-          w: size.width / scaleFactor,
-          h: size.height / scaleFactor,
-        };
-
-        const monitor = await currentMonitor();
-        if (monitor) {
-          const mw = monitor.size.width / scaleFactor;
-          const mh = monitor.size.height / scaleFactor;
-          const mx = monitor.position.x / scaleFactor;
-          const my = monitor.position.y / scaleFactor;
-          await win.setAlwaysOnTop(true);
-          await win.setPosition(new LogicalPosition(mx, my));
-          await win.setSize(new LogicalSize(mw, mh));
-        }
-      } catch (e) {
-        console.error("Failed to enter fullscreen:", e);
-      }
-    } else {
-      // 退出全屏：恢复原始位置
-      try {
-        await win.setAlwaysOnTop(false);
-        const b = savedWindowBounds.current;
-        if (b) {
-          await win.setSize(new LogicalSize(b.w, b.h));
-          await win.setPosition(new LogicalPosition(b.x, b.y));
-          savedWindowBounds.current = null;
-        }
-      } catch (e) {
-        console.error("Failed to exit fullscreen:", e);
-      }
+    try {
+      const fs = await win.isFullscreen();
+      await win.setFullscreen(!fs);
+      setIsFullscreen(!fs);
+    } catch (e) {
+      console.error("Failed to toggle fullscreen:", e);
     }
-
-    setIsFullscreen(!isFullscreen);
-  }, [isFullscreen]);
+  }, []);
 
   useEffect(() => {
     // 自己跟踪全屏状态，不依赖 Tauri 的 isFullscreen()
@@ -284,15 +247,9 @@ export function useReaderControls({
   }, []);
 
   const handleBack = useCallback(async () => {
-    // 进度由 unmount cleanup 统一保存
     const win = getCurrentWindow();
-    await win.setAlwaysOnTop(false).catch(() => {});
-    const b = savedWindowBounds.current;
-    if (b) {
-      await win.setSize(new LogicalSize(b.w, b.h)).catch(() => {});
-      await win.setPosition(new LogicalPosition(b.x, b.y)).catch(() => {});
-      savedWindowBounds.current = null;
-    }
+    const fs = await win.isFullscreen().catch(() => false);
+    if (fs) await win.setFullscreen(false).catch(() => {});
     navigate({ to: "/library" });
   }, [navigate]);
 

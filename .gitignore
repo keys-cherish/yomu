@@ -3,3 +3,4 @@ dist
 .claude
 tauri-dev.log
 tsconfig.tsbuildinfo
+v10/*

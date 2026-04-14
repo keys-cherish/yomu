@@ -32,6 +32,7 @@ interface ReaderToolbarProps {
   onSliderChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onSliderMouseDown: () => void;
   onSliderMouseUp: (e: React.MouseEvent<HTMLInputElement> | React.TouchEvent<HTMLInputElement>) => void;
+  enhanceButtons: { key: string; icon: React.ComponentType<{ size?: number; strokeWidth?: number }>; label: string; active: boolean; onToggle: () => void }[];
 }
 
 /** 阅读器工具栏，负责顶部窗口控制和底部阅读设置面板 */
@@ -59,6 +60,7 @@ export function ReaderToolbar({
   onSliderChange,
   onSliderMouseDown,
   onSliderMouseUp,
+  enhanceButtons,
 }: ReaderToolbarProps) {
   const currentModeOption = modeOptions.find((o) => o.value === mode) ?? modeOptions[0]!;
   const currentDirOption = dirOptions.find((o) => o.value === direction) ?? dirOptions[0]!;
@@ -163,6 +165,29 @@ export function ReaderToolbar({
                   open={openMenu === "fit"}
                   onToggle={() => onSetOpenMenu(openMenu === "fit" ? null : "fit")}
                 />
+              </div>
+
+              <div className="mx-4 border-t border-white/[0.06]" />
+
+              {/* 图像增强按钮 */}
+              <div className="flex items-center justify-around px-2 py-2">
+                {enhanceButtons.map((btn) => {
+                  const Icon = btn.icon;
+                  return (
+                    <button
+                      key={btn.key}
+                      onClick={btn.onToggle}
+                      className={`flex min-w-[60px] flex-col items-center gap-1 border px-3 py-2 transition-colors ${
+                        btn.active
+                          ? "border-[rgba(200,155,99,0.42)] bg-[rgba(200,155,99,0.12)] text-[#f0ddc5]"
+                          : "border-transparent text-white/60 hover:border-white/[0.08] hover:text-white/90 hover:bg-white/[0.04]"
+                      }`}
+                    >
+                      <Icon size={18} strokeWidth={1.5} />
+                      <span className="text-[10px] leading-none">{btn.label}</span>
+                    </button>
+                  );
+                })}
               </div>
 
               <div className="mx-4 border-t border-white/[0.06]" />
