@@ -20,6 +20,7 @@ export interface ImageEnhanceOptions {
   sharpen: boolean;
   contrastBoost: boolean;
   textEnhance: boolean;
+  trimWhiteBorders: boolean;
 }
 
 /** WebDAV 配置 */
@@ -38,6 +39,8 @@ interface SettingsState {
   theme: ThemeMode;
   readerNightMode: boolean;
   imageEnhance: ImageEnhanceOptions;
+  autoLoadNext: boolean;
+  readerBgColor: string;
   webdav: WebDavConfig;
   toggleSidebar: () => void;
   setReadingMode: (mode: ReadingMode) => void;
@@ -46,6 +49,8 @@ interface SettingsState {
   setTheme: (theme: ThemeMode) => void;
   setReaderNightMode: (on: boolean) => void;
   setImageEnhance: (options: Partial<ImageEnhanceOptions>) => void;
+  setAutoLoadNext: (on: boolean) => void;
+  setReaderBgColor: (color: string) => void;
   setWebDav: (config: Partial<WebDavConfig>) => void;
 }
 
@@ -61,7 +66,9 @@ export const useSettingsStore = create<SettingsState>()(
       fitMode: "height",
       theme: "dark",
       readerNightMode: false,
-      imageEnhance: { sharpen: false, contrastBoost: false, textEnhance: false },
+      imageEnhance: { sharpen: false, contrastBoost: false, textEnhance: false, trimWhiteBorders: false },
+      autoLoadNext: true,
+      readerBgColor: "#000000",
       webdav: { url: "", username: "", password: "" },
       toggleSidebar: () => set((s) => ({ sidebarCollapsed: !s.sidebarCollapsed })),
       setReadingMode: (mode) => set({ readingMode: mode }),
@@ -70,11 +77,13 @@ export const useSettingsStore = create<SettingsState>()(
       setTheme: (theme) => set({ theme }),
       setReaderNightMode: (on) => set({ readerNightMode: on }),
       setImageEnhance: (options) => set((s) => ({ imageEnhance: { ...s.imageEnhance, ...options } })),
+      setAutoLoadNext: (on) => set({ autoLoadNext: on }),
+      setReaderBgColor: (color) => set({ readerBgColor: color }),
       setWebDav: (config) => set((s) => ({ webdav: { ...s.webdav, ...config } })),
     }),
     {
       name: "yomu-settings",
-      version: 5,
+      version: 6,
       migrate: (persisted: unknown, version: number) => {
         const state = persisted as Record<string, unknown>;
         if (version === 0 && state.fitMode === "original") {
@@ -89,11 +98,20 @@ export const useSettingsStore = create<SettingsState>()(
         }
         if (version < 4) {
           if (!state.imageEnhance) {
-            state.imageEnhance = { sharpen: false, contrastBoost: false, textEnhance: false };
+            state.imageEnhance = { sharpen: false, contrastBoost: false, textEnhance: false, trimWhiteBorders: false };
           }
         }
         if (version < 5) {
           // v5: 新增 flip 阅读模式，无需迁移数据，仅占位确保版本号递增
+        }
+        if (version < 6) {
+          // v6: 新增白边裁剪、自动载入下一个文件、自定义背景色
+          const enhance = state.imageEnhance as Record<string, unknown> | undefined;
+          if (enhance && enhance.trimWhiteBorders === undefined) {
+            enhance.trimWhiteBorders = false;
+          }
+          if (state.autoLoadNext === undefined) state.autoLoadNext = true;
+          if (state.readerBgColor === undefined) state.readerBgColor = "#000000";
         }
         return state as unknown as SettingsState;
       },

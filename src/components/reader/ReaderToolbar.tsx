@@ -8,6 +8,16 @@ import type {
 } from "./types";
 import type { ReadingDirection, ReadingMode, FitMode } from "@/stores/settings";
 
+/** 背景色预设 */
+const BG_COLOR_PRESETS = [
+  { value: "#000000", label: "纯黑" },
+  { value: "#1a1a1a", label: "深灰" },
+  { value: "#2c2c2c", label: "中灰" },
+  { value: "#f5f0e8", label: "暖纸" },
+  { value: "#e8dcc8", label: "泛黄" },
+  { value: "#ffffff", label: "纯白" },
+] as const;
+
 interface ReaderToolbarProps {
   showToolbar: boolean;
   isFullscreen: boolean;
@@ -33,6 +43,8 @@ interface ReaderToolbarProps {
   onSliderMouseDown: () => void;
   onSliderMouseUp: (e: React.MouseEvent<HTMLInputElement> | React.TouchEvent<HTMLInputElement>) => void;
   enhanceButtons: { key: string; icon: React.ComponentType<{ size?: number; strokeWidth?: number }>; label: string; active: boolean; onToggle: () => void }[];
+  readerBgColor: string;
+  onSetReaderBgColor: (color: string) => void;
 }
 
 /** 阅读器工具栏，负责顶部窗口控制和底部阅读设置面板 */
@@ -61,6 +73,8 @@ export function ReaderToolbar({
   onSliderMouseDown,
   onSliderMouseUp,
   enhanceButtons,
+  readerBgColor,
+  onSetReaderBgColor,
 }: ReaderToolbarProps) {
   const currentModeOption = modeOptions.find((o) => o.value === mode) ?? modeOptions[0]!;
   const currentDirOption = dirOptions.find((o) => o.value === direction) ?? dirOptions[0]!;
@@ -189,6 +203,47 @@ export function ReaderToolbar({
                     </button>
                   );
                 })}
+              </div>
+
+              <div className="mx-4 border-t border-white/[0.06]" />
+
+              {/* 背景色预设 */}
+              <div className="flex items-center gap-2 px-4 py-2">
+                <span className="text-[10px] text-white/35 shrink-0">背景</span>
+                <div className="flex items-center gap-1.5 flex-1">
+                  {BG_COLOR_PRESETS.map((preset) => (
+                    <button
+                      key={preset.value}
+                      onClick={() => onSetReaderBgColor(preset.value)}
+                      title={preset.label}
+                      className={`w-6 h-6 rounded-full border-2 transition-all shrink-0 ${
+                        readerBgColor === preset.value
+                          ? "border-[rgba(200,155,99,0.7)] scale-110"
+                          : "border-white/20 hover:border-white/40"
+                      }`}
+                      style={{ backgroundColor: preset.value }}
+                    />
+                  ))}
+                  <div className="relative ml-auto shrink-0">
+                    <input
+                      type="color"
+                      value={readerBgColor}
+                      onChange={(e) => onSetReaderBgColor(e.target.value)}
+                      className="absolute inset-0 w-6 h-6 opacity-0 cursor-pointer"
+                      title="自定义颜色"
+                    />
+                    <div
+                      className={`w-6 h-6 rounded-full border-2 transition-all ${
+                        BG_COLOR_PRESETS.some((p) => p.value === readerBgColor)
+                          ? "border-white/20"
+                          : "border-[rgba(200,155,99,0.7)] scale-110"
+                      }`}
+                      style={{
+                        background: `conic-gradient(#f00, #ff0, #0f0, #0ff, #00f, #f0f, #f00)`,
+                      }}
+                    />
+                  </div>
+                </div>
               </div>
 
               <div className="mx-4 border-t border-white/[0.06]" />

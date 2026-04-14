@@ -9,6 +9,7 @@ import {
   ArrowRightLeft,
   BookOpen,
   Columns2,
+  Crop,
   FileText,
   Fullscreen,
   RectangleHorizontal,
@@ -54,6 +55,9 @@ export function ReaderPage() {
   const setFitMode = useSettingsStore((s) => s.setFitMode);
   const imageEnhance = useSettingsStore((s) => s.imageEnhance);
   const setImageEnhance = useSettingsStore((s) => s.setImageEnhance);
+  const autoLoadNext = useSettingsStore((s) => s.autoLoadNext);
+  const readerBgColor = useSettingsStore((s) => s.readerBgColor);
+  const setReaderBgColor = useSettingsStore((s) => s.setReaderBgColor);
 
   const totalPages = book?.page_count ?? 0;
 
@@ -80,6 +84,7 @@ export function ReaderPage() {
     mode,
     direction,
     fitMode,
+    autoLoadNext,
     navigate,
   });
 
@@ -143,10 +148,17 @@ export function ReaderPage() {
       active: imageEnhance.textEnhance,
       onToggle: () => setImageEnhance({ textEnhance: !imageEnhance.textEnhance }),
     },
+    {
+      key: "trim",
+      icon: Crop,
+      label: "白边裁剪",
+      active: imageEnhance.trimWhiteBorders,
+      onToggle: () => setImageEnhance({ trimWhiteBorders: !imageEnhance.trimWhiteBorders }),
+    },
   ];
 
   return (
-    <div className="reader-view fixed inset-0 flex flex-col select-none">
+    <div className="reader-view fixed inset-0 flex flex-col select-none" style={{ backgroundColor: readerBgColor }}>
       <ReaderToolbar
         showToolbar={controls.showToolbar}
         isFullscreen={controls.isFullscreen}
@@ -172,6 +184,8 @@ export function ReaderPage() {
         onSliderMouseDown={controls.handleSliderMouseDown}
         onSliderMouseUp={controls.handleSliderMouseUp}
         enhanceButtons={enhanceButtons}
+        readerBgColor={readerBgColor}
+        onSetReaderBgColor={setReaderBgColor}
       />
 
       {mode === "flip" ? (

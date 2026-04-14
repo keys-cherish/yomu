@@ -109,3 +109,41 @@ pub fn save_progress(db: &Connection, hash: &str, page_index: i64) -> Result<usi
     )?;
     Ok(affected)
 }
+
+/// 获取同系列中按 title 排序的下一本书
+/// 如果当前书没有 series_name 或已是系列最后一本，返回 None。
+pub fn get_next_book(db: &Connection, hash: &str) -> Result<Option<Book>, Box<dyn std::error::Error>> {
+    let result = db.query_row(
+        "SELECT b.id, b.library_id, b.hash, b.title, b.path, b.file_size, b.page_count, b.cover_path, b.format, b.read_progress, b.is_favorite, b.added_at, b.series_name
+         FROM books b
+         WHERE b.series_name = (SELECT series_name FROM books WHERE hash = ?1 AND series_name IS NOT NULL)
+           AND b.title > (SELECT title FROM books WHERE hash = ?1)
+           AND b.is_removed = 0
+         ORDER BY b.title ASC
+         LIMIT 1",
+        rusqlite::params![hash],
+        |row| {
+            Ok(Book {
+                id: row.get(0)?,
+                library_id: row.get(1)?,
+                hash: row.get(2)?,
+                title: row.get(3)?,
+                path: row.get(4)?,
+                file_size: row.get(5)?,
+                page_count: row.get(6)?,
+                cover_path: row.get(7)?,
+                format: row.get(8)?,
+                read_progress: row.get(9)?,
+                is_favorite: row.get::<_, i64>(10)? != 0,
+                added_at: row.get(11)?,
+                series_name: row.get(12)?,
+            })
+        },
+    );
+
+    match result {
+        Ok(book) => Ok(Some(book)),
+        Err(rusqlite::Error::QueryReturnedNoRows) => Ok(None),
+        Err(e) => Err(Box::new(e)),
+    }
+}

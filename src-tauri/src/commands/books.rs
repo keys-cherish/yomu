@@ -41,3 +41,13 @@ pub async fn save_reading_progress(
     }
     Ok(())
 }
+
+/// 获取同系列中按标题排序的下一本书（用于连续阅读）
+#[tauri::command]
+pub async fn get_next_book(
+    state: State<'_, db::DbState>,
+    hash: String,
+) -> Result<Option<db::Book>, String> {
+    let db = state.0.lock().map_err(|e| e.to_string())?;
+    db::get_next_book(&db, &hash).map_err(|e| e.to_string())
+}

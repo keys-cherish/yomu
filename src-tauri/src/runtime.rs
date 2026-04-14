@@ -61,6 +61,7 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             crate::commands::books::get_books,
             crate::commands::books::get_book_by_hash,
+            crate::commands::books::get_next_book,
             crate::commands::books::save_reading_progress,
             crate::commands::cache::warm_cache,
             crate::commands::cache::cleanup_cache,

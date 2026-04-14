@@ -69,9 +69,18 @@ export function ReaderPageImage({ bookHash, pageIndex, mode, fitMode, lazy, imag
   const imgClasses = getImageClasses(mode, fitMode, loaded);
   const enhanceFilter = useMemo(() => buildEnhanceFilter(imageEnhance), [imageEnhance]);
   const imgStyle = useMemo<React.CSSProperties | undefined>(() => {
-    if (!enhanceFilter) return undefined;
-    return { filter: enhanceFilter, imageRendering: imageEnhance?.sharpen ? "auto" as const : undefined };
-  }, [enhanceFilter, imageEnhance?.sharpen]);
+    const style: React.CSSProperties = {};
+    if (enhanceFilter) {
+      style.filter = enhanceFilter;
+      if (imageEnhance?.sharpen) style.imageRendering = "auto";
+    }
+    // 白边裁剪：通过 clip-path 内缩 + scale 补偿，视觉上裁掉页面边缘白边
+    if (imageEnhance?.trimWhiteBorders) {
+      style.clipPath = "inset(2% 1.5% 2% 1.5%)";
+      style.transform = "scale(1.04)";
+    }
+    return Object.keys(style).length > 0 ? style : undefined;
+  }, [enhanceFilter, imageEnhance?.sharpen, imageEnhance?.trimWhiteBorders]);
   const wrapperStyle = useMemo<React.CSSProperties | undefined>(() => {
     if (mode !== "scroll" || !imageSize || imageSize.w === 0 || imageSize.h === 0) return undefined;
     return {
